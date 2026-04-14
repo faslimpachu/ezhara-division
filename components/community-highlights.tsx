@@ -1,337 +1,364 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { ChevronLeft, ChevronRight, ArrowUpRight, Droplet, Users, Sparkles, Heart } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { ChevronLeft, ChevronRight, ArrowRight, Droplet, Users, Heart, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 
-const highlights = [
+const slides = [
   {
     id: 1,
     tag: 'Health Initiative',
     title: 'Blood Donation Drive',
-    subtitle: 'Over 200 donors contributed this month alone — making Ward 34 one of the most active blood donation communities in Kannur.',
-    stat: { value: '200+', label: 'Donors This Month' },
+    desc: 'Over 200 donors contributed this month — making Ward 34 one of the most active blood donation communities in Kannur.',
+    stat: '200+',
+    statLabel: 'Donors This Month',
+    accent: '#e03131',
+    bg: 'linear-gradient(135deg, #1a0505 0%, #3d0a0a 50%, #1a0000 100%)',
+    iconBg: '#fee2e2',
+    iconColor: '#e03131',
     icon: Droplet,
-    from: '#1a0505',
-    to: '#3b0a0a',
-    accent: '#ef4444',
-    orb1: '#7f1d1d',
-    orb2: '#f87171',
-    href: '/services/blood-bank',
     cta: 'Register as Donor',
+    href: '/services/blood-bank',
+    num: '01',
   },
   {
     id: 2,
     tag: 'Community Event',
     title: 'Ezhara Celebrates Together',
-    subtitle: 'Ward residents came together for our annual community day — hundreds joined the festivities, strengthening bonds across all neighborhoods.',
-    stat: { value: '850+', label: 'Attendees' },
+    desc: 'Ward residents united for our annual community day — 850+ joined the festivities, strengthening bonds across all neighborhoods.',
+    stat: '850+',
+    statLabel: 'Attendees',
+    accent: '#1971c2',
+    bg: 'linear-gradient(135deg, #020b1a 0%, #0a1e45 50%, #020b1a 100%)',
+    iconBg: '#dbeafe',
+    iconColor: '#1971c2',
     icon: Users,
-    from: '#040d1f',
-    to: '#0c1f4a',
-    accent: '#3b82f6',
-    orb1: '#1e3a8a',
-    orb2: '#60a5fa',
-    href: '/about',
     cta: 'Learn More',
+    href: '/about',
+    num: '02',
   },
   {
     id: 3,
     tag: 'Impact Report',
     title: '500+ Lives Impacted',
-    subtitle: 'From emergency blood supply to welfare distributions, our community programs have touched over 500 families across Division 34 this year.',
-    stat: { value: '500+', label: 'Lives Impacted' },
+    desc: 'From emergency blood supply to welfare distributions, our programs touched over 500 families across Division 34 this year.',
+    stat: '500+',
+    statLabel: 'Lives Impacted',
+    accent: '#2f9e44',
+    bg: 'linear-gradient(135deg, #011a0c 0%, #04351a 50%, #011a0c 100%)',
+    iconBg: '#dcfce7',
+    iconColor: '#2f9e44',
     icon: Heart,
-    from: '#021a10',
-    to: '#05341e',
-    accent: '#10b981',
-    orb1: '#064e3b',
-    orb2: '#34d399',
-    href: '/initiatives',
     cta: 'See All Programs',
+    href: '/initiatives',
+    num: '03',
   },
   {
     id: 4,
     tag: 'Welfare',
     title: 'Supporting Families in Need',
-    subtitle: 'Our welfare programs distributed aid to 180+ families this quarter — ensuring no resident of Ward 34 is left without support.',
-    stat: { value: '180+', label: 'Families Aided' },
+    desc: 'Our welfare programs distributed aid to 180+ families this quarter — ensuring no resident of Ward 34 is left without support.',
+    stat: '180+',
+    statLabel: 'Families Aided',
+    accent: '#7048e8',
+    bg: 'linear-gradient(135deg, #100320 0%, #1e0840 50%, #100320 100%)',
+    iconBg: '#ede9fe',
+    iconColor: '#7048e8',
     icon: Sparkles,
-    from: '#0f0520',
-    to: '#1e0a3d',
-    accent: '#a855f7',
-    orb1: '#4c1d95',
-    orb2: '#c084fc',
-    href: '/services/welfare-schemes',
     cta: 'Apply Now',
+    href: '/services/welfare-schemes',
+    num: '04',
   },
 ]
 
 export default function CommunityHighlights() {
   const [current, setCurrent] = useState(0)
   const [direction, setDirection] = useState(1)
-  const [paused, setPaused] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const goTo = useCallback((index: number, dir = 1) => {
-    setDirection(dir)
-    setCurrent(index)
-    setPaused(true)
+  const resetTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => setCurrent((c) => (c + 1) % slides.length), 5500)
   }, [])
 
-  const next = useCallback(() => goTo((current + 1) % highlights.length, 1), [current, goTo])
-  const prev = useCallback(() => goTo((current - 1 + highlights.length) % highlights.length, -1), [current, goTo])
+  const goTo = useCallback(
+    (idx: number, dir = 1) => {
+      setDirection(dir)
+      setCurrent((idx + slides.length) % slides.length)
+      resetTimer()
+    },
+    [resetTimer]
+  )
+
+  const next = useCallback(() => goTo(current + 1, 1), [current, goTo])
+  const prev = useCallback(() => goTo(current - 1, -1), [current, goTo])
 
   useEffect(() => {
-    if (paused) return
-    const t = setInterval(next, 5500)
-    return () => clearInterval(t)
-  }, [paused, next])
+    resetTimer()
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [resetTimer])
 
-  const slide = highlights[current]
+  const slide = slides[current]
   const Icon = slide.icon
 
   const textVariants = {
-    enter: (d: number) => ({ opacity: 0, y: d > 0 ? 28 : -28 }),
+    enter: (d: number) => ({ opacity: 0, y: d > 0 ? 18 : -18 }),
     center: { opacity: 1, y: 0 },
-    exit: (d: number) => ({ opacity: 0, y: d > 0 ? -28 : 28 }),
+    exit: (d: number) => ({ opacity: 0, y: d > 0 ? -18 : 18 }),
   }
 
   return (
     <section
-      className="relative py-20 px-5 sm:px-8 lg:px-12 overflow-hidden"
-      style={{ fontFamily: "'DM Sans', sans-serif", background: '#0a0a0f' }}
+      className="py-16 px-5 sm:px-8 lg:px-12"
+      style={{ background: '#ffffff', fontFamily: "'Inter', system-ui, sans-serif" }}
     >
-      {/* Section header */}
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-7xl mx-auto mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3"
-      >
-        <div>
-          <div className="inline-flex items-center gap-2 mb-3 px-3 py-1.5 rounded-full border border-white/10 bg-white/5">
-            <span className="w-1.5 h-1.5 rounded-full bg-white/50 animate-pulse" />
-            <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-white/50">Community Highlights</span>
+      <div className="max-w-6xl mx-auto">
+
+        {/* ── Header ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          className="flex items-end justify-between mb-8 gap-4 flex-wrap"
+        >
+          <div>
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className="w-1.5 h-1.5 rounded-full bg-neutral-900 animate-pulse opacity-40" />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-400">
+                Community Highlights
+              </span>
+            </div>
+            <h2
+              className="font-black text-neutral-900 leading-[1.08]"
+              style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.6rem)', letterSpacing: '-0.04em' }}
+            >
+              Stories from
+              <br />
+              <span className="text-neutral-300">Division 34</span>
+            </h2>
           </div>
-          <h2
-            className="text-white font-black leading-tight"
-            style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)', letterSpacing: '-0.03em' }}
-          >
-            Stories That{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/90 to-white/40">
-              Define Us
+
+          <div className="flex flex-col items-end gap-2.5">
+            <span className="text-[13px] font-semibold tabular-nums text-neutral-300" style={{ letterSpacing: '0.06em' }}>
+              {slide.num} / {String(slides.length).padStart(2, '0')}
             </span>
-          </h2>
-        </div>
-        <p className="text-white/30 text-[14px] max-w-xs leading-relaxed">
-          Real impact, real people — the heart of Division 34.
-        </p>
-      </motion.div>
-
-      <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-[1fr_360px] gap-4 lg:gap-6 items-stretch">
-
-          {/* ── Main Showcase Panel ── */}
-          <div className="relative rounded-3xl overflow-hidden" style={{ minHeight: 480 }}>
-
-            {/* Animated BG */}
-            <AnimatePresence initial={false}>
-              <motion.div
-                key={`bg-${current}`}
-                className="absolute inset-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.8 }}
-                style={{
-                  background: `radial-gradient(ellipse at 15% 60%, ${slide.orb1}88 0%, transparent 55%), radial-gradient(ellipse at 80% 15%, ${slide.orb2}44 0%, transparent 50%), linear-gradient(135deg, ${slide.from} 0%, ${slide.to} 100%)`,
-                }}
-              />
-            </AnimatePresence>
-
-            {/* Grain */}
-            <div className="absolute inset-0 opacity-[0.04]" style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-              backgroundSize: '180px 180px',
-            }} />
-
-            {/* Grid */}
-            <div className="absolute inset-0 opacity-[0.03]" style={{
-              backgroundImage: 'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)',
-              backgroundSize: '48px 48px',
-            }} />
-
-            {/* Content */}
-            <div className="relative z-10 flex flex-col justify-between h-full p-8 sm:p-10" style={{ minHeight: 480 }}>
-              <AnimatePresence mode="wait" custom={direction}>
-                <motion.div
-                  key={`content-${current}`}
-                  custom={direction}
-                  variants={textVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex flex-col gap-6 flex-1 justify-between"
+            <div className="flex gap-2">
+              {[
+                { fn: prev, Ic: ChevronLeft },
+                { fn: next, Ic: ChevronRight },
+              ].map(({ fn, Ic }, i) => (
+                <button
+                  key={i}
+                  onClick={fn}
+                  className="w-[38px] h-[38px] rounded-full border-[1.5px] border-neutral-200 bg-white flex items-center justify-center text-neutral-400 hover:bg-neutral-900 hover:border-neutral-900 hover:text-white transition-all duration-200"
                 >
-                  {/* Top */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-5">
-                      <div
-                        className="w-9 h-9 rounded-xl flex items-center justify-center"
-                        style={{ background: `${slide.accent}22`, border: `1px solid ${slide.accent}44` }}
-                      >
-                        <Icon className="w-4.5 h-4.5" style={{ color: slide.accent }} />
-                      </div>
-                      <span
-                        className="text-[11px] font-bold uppercase tracking-[0.1em] px-3 py-1 rounded-full"
-                        style={{ background: `${slide.accent}18`, color: slide.accent, border: `1px solid ${slide.accent}30` }}
-                      >
-                        {slide.tag}
-                      </span>
-                    </div>
-
-                    <h3
-                      className="text-white font-black leading-tight mb-4"
-                      style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', letterSpacing: '-0.03em' }}
-                    >
-                      {slide.title}
-                    </h3>
-                    <p className="text-white/50 leading-relaxed max-w-lg" style={{ fontSize: 'clamp(0.9rem, 1.4vw, 1rem)' }}>
-                      {slide.subtitle}
-                    </p>
-                  </div>
-
-                  {/* Bottom row */}
-                  <div className="flex items-end justify-between gap-4">
-                    {/* Stat */}
-                    <div>
-                      <div
-                        className="text-5xl font-black leading-none mb-1"
-                        style={{ color: slide.accent, letterSpacing: '-0.04em' }}
-                      >
-                        {slide.stat.value}
-                      </div>
-                      <div className="text-white/40 text-[12px] font-semibold uppercase tracking-widest">{slide.stat.label}</div>
-                    </div>
-
-                    {/* CTA */}
-                    <Link href={slide.href}>
-                      <button
-                        className="group flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-[13px] text-white transition-all duration-300 hover:-translate-y-px hover:shadow-xl"
-                        style={{
-                          background: `linear-gradient(135deg, ${slide.accent}dd, ${slide.accent}99)`,
-                          boxShadow: `0 6px 24px ${slide.accent}40`,
-                        }}
-                      >
-                        {slide.cta}
-                        <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                      </button>
-                    </Link>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+                  <Ic className="w-4 h-4" />
+                </button>
+              ))}
             </div>
           </div>
+        </motion.div>
 
-          {/* ── Side Thumbnail Stack ── */}
-          <div className="flex flex-row lg:flex-col gap-3">
-            {highlights.map((h, i) => {
-              const HIcon = h.icon
-              const isActive = i === current
-              return (
-                <motion.button
-                  key={h.id}
-                  onClick={() => goTo(i, i > current ? 1 : -1)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  className="relative flex-1 lg:flex-none text-left rounded-2xl overflow-hidden border transition-all duration-300"
+        {/* ── Main hero card ── */}
+        <div
+          className="relative rounded-3xl overflow-hidden mb-3"
+          style={{ minHeight: 500 }}
+        >
+          {/* BG crossfade */}
+          <AnimatePresence initial={false}>
+            <motion.div
+              key={`bg-${current}`}
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6 }}
+              style={{ background: slide.bg }}
+            />
+          </AnimatePresence>
+
+          {/* Orbs */}
+          <div
+            className="absolute top-[-80px] right-[-60px] w-[380px] h-[380px] rounded-full pointer-events-none"
+            style={{ background: slide.accent, opacity: 0.13, transition: 'background 0.5s' }}
+          />
+          <div
+            className="absolute bottom-[40px] left-[30px] w-[220px] h-[220px] rounded-full pointer-events-none"
+            style={{ background: slide.accent, opacity: 0.1, transition: 'background 0.5s' }}
+          />
+
+          {/* Veil */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'linear-gradient(160deg, transparent 25%, rgba(0,0,0,0.62) 100%)' }}
+          />
+
+          {/* Watermark number */}
+          <div
+            className="absolute top-6 right-8 font-black leading-none select-none pointer-events-none"
+            style={{
+              fontSize: 'clamp(5rem, 14vw, 10rem)',
+              color: 'rgba(255,255,255,0.06)',
+              letterSpacing: '-0.06em',
+            }}
+          >
+            {slide.num}
+          </div>
+
+          {/* Content */}
+          <div
+            className="relative z-10 flex flex-col justify-end h-full p-10 sm:p-12"
+            style={{ minHeight: 500 }}
+          >
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={`content-${current}`}
+                custom={direction}
+                variants={textVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {/* Tag */}
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm mb-5 w-fit">
+                  <Icon className="w-3 h-3 text-white/80" />
+                  <span className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-white/90">
+                    {slide.tag}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h3
+                  className="text-white font-black leading-[1.08] mb-3"
                   style={{
-                    borderColor: isActive ? `${h.accent}60` : 'rgba(255,255,255,0.06)',
-                    background: isActive
-                      ? `linear-gradient(135deg, ${h.from}, ${h.to})`
-                      : 'rgba(255,255,255,0.03)',
-                    padding: '14px 16px',
-                    minHeight: 90,
+                    fontSize: 'clamp(1.9rem, 4vw, 3.1rem)',
+                    letterSpacing: '-0.04em',
+                    maxWidth: '15ch',
                   }}
                 >
-                  {/* Active glow */}
-                  {isActive && (
-                    <div
-                      className="absolute inset-0 opacity-30 rounded-2xl"
-                      style={{ background: `radial-gradient(ellipse at 30% 50%, ${h.orb1}, transparent)` }}
-                    />
-                  )}
+                  {slide.title}
+                </h3>
 
-                  <div className="relative flex items-center gap-3">
+                {/* Desc */}
+                <p
+                  className="leading-[1.7] mb-8"
+                  style={{
+                    color: 'rgba(255,255,255,0.58)',
+                    fontSize: '15px',
+                    maxWidth: '46ch',
+                  }}
+                >
+                  {slide.desc}
+                </p>
+
+                {/* Stat + CTA */}
+                <div className="flex items-end justify-between gap-6 flex-wrap">
+                  <div>
                     <div
-                      className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center"
+                      className="font-black leading-none mb-1.5 tabular-nums text-white"
                       style={{
-                        background: `${h.accent}22`,
-                        border: `1px solid ${h.accent}${isActive ? '55' : '30'}`,
+                        fontSize: 'clamp(2.6rem, 5vw, 4rem)',
+                        letterSpacing: '-0.05em',
                       }}
                     >
-                      <HIcon className="w-4 h-4" style={{ color: h.accent }} />
+                      {slide.stat}
                     </div>
-                    <div className="overflow-hidden">
-                      <p
-                        className="font-bold text-[12.5px] leading-tight truncate"
-                        style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.45)' }}
-                      >
-                        {h.title}
-                      </p>
-                      <p className="text-[11px] mt-0.5 truncate" style={{ color: isActive ? `${h.accent}` : 'rgba(255,255,255,0.25)' }}>
-                        {h.stat.value} {h.stat.label}
-                      </p>
+                    <div className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-white/35">
+                      {slide.statLabel}
                     </div>
                   </div>
 
-                  {/* Progress bar on active */}
-                  {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/10 rounded-b-2xl overflow-hidden">
-                      <motion.div
-                        className="h-full"
-                        style={{ background: h.accent }}
-                        initial={{ width: '0%' }}
-                        animate={{ width: '100%' }}
-                        transition={{ duration: 5.5, ease: 'linear' }}
-                        key={`prog-${current}`}
-                      />
-                    </div>
-                  )}
-                </motion.button>
-              )
-            })}
+                  <Link href={slide.href}>
+                    <button className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-neutral-900 text-[13px] font-bold hover:-translate-y-0.5 hover:scale-[1.02] transition-all duration-150 whitespace-nowrap">
+                      {slide.cta}
+                      <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.5} />
+                    </button>
+                  </Link>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Progress bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/10">
+            <motion.div
+              className="h-full bg-white"
+              initial={{ width: '0%' }}
+              animate={{ width: '100%' }}
+              transition={{ duration: 5.5, ease: 'linear' }}
+              key={`prog-${current}`}
+            />
           </div>
         </div>
 
-        {/* Controls row */}
-        <div className="flex items-center justify-between mt-6">
-          <p className="text-white/20 text-[12px] font-medium">
-            {current + 1} / {highlights.length} stories
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={prev}
-              className="w-9 h-9 rounded-xl flex items-center justify-center border border-white/10 bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all duration-200"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={next}
-              className="w-9 h-9 rounded-xl flex items-center justify-center border border-white/10 bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all duration-200"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+        {/* ── Thumbnail strip ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {slides.map((s, i) => {
+            const SIcon = s.icon
+            const isActive = i === current
+            return (
+              <motion.button
+                key={s.id}
+                onClick={() => goTo(i, i > current ? 1 : -1)}
+                whileHover={{ scale: isActive ? 1 : 1.02, y: isActive ? 0 : -1 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                className="relative text-left rounded-[18px] overflow-hidden p-[18px] transition-all duration-200"
+                style={{
+                  background: isActive ? '#fff' : '#fafafa',
+                  border: `1.5px solid ${isActive ? s.accent : '#ebebeb'}`,
+                  boxShadow: isActive ? '0 4px 24px -4px rgba(0,0,0,0.10)' : 'none',
+                }}
+              >
+                {/* Icon */}
+                <div
+                  className="w-9 h-9 rounded-[11px] flex items-center justify-center mb-3 transition-all duration-200"
+                  style={{ background: isActive ? s.iconBg : '#f3f4f6' }}
+                >
+                  <SIcon
+                    className="w-4 h-4 transition-colors duration-200"
+                    style={{ color: isActive ? s.iconColor : '#bbb' }}
+                  />
+                </div>
+
+                {/* Text */}
+                <div
+                  className="text-[12.5px] font-bold leading-tight mb-1 transition-colors duration-200"
+                  style={{ color: isActive ? '#111' : '#888' }}
+                >
+                  {s.title}
+                </div>
+                <div
+                  className="text-[11px] font-semibold transition-colors duration-200"
+                  style={{ color: isActive ? s.accent : '#ccc' }}
+                >
+                  {s.stat} {s.statLabel}
+                </div>
+
+                {/* Progress */}
+                <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-neutral-100">
+                  {isActive && (
+                    <motion.div
+                      className="h-full"
+                      style={{ background: s.accent }}
+                      initial={{ width: '0%' }}
+                      animate={{ width: '100%' }}
+                      transition={{ duration: 5.5, ease: 'linear' }}
+                      key={`tp-${current}`}
+                    />
+                  )}
+                </div>
+              </motion.button>
+            )
+          })}
         </div>
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
       `}</style>
     </section>
   )
