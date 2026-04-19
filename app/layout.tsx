@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
-import { Plus_Jakarta_Sans, Geist_Mono, Noto_Sans } from 'next/font/google'
+import { Plus_Jakarta_Sans, Geist_Mono, Noto_Sans_Malayalam } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from '@/components/ui/toaster'
+import { AuthProvider } from '@/contexts/AuthContext'
 import './globals.css'
 
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
-const notoSansMalayalam = Noto_Sans({ subsets: ["malayalam", "latin"] });
+const notoSansMalayalam = Noto_Sans_Malayalam({ subsets: ["malayalam"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -38,7 +40,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${plusJakarta.className} antialiased bg-background text-foreground`}>
-        {children}
+        <AuthProvider>
+          {children}
+          <Toaster />
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

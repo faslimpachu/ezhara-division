@@ -18,12 +18,13 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Phone } from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
+import { ApiError, sendOTP } from '@/lib/services/auth'
 
 const phoneSchema = z.object({
   phone: z
     .string()
-    .min(10, 'Enter a valid 10-digit number')
-    .max(10, 'Enter a valid 10-digit number'),
+    .regex(/^\d{10}$/, 'Enter a valid 10-digit number'),
 })
 
 type PhoneFormValues = z.infer<typeof phoneSchema>
@@ -34,18 +35,35 @@ export default function LoginPage() {
 
   const form = useForm<PhoneFormValues>({
     resolver: zodResolver(phoneSchema),
+    mode: 'onSubmit',
     defaultValues: {
       phone: '',
     },
   })
 
   const onSubmit = async (values: PhoneFormValues) => {
-    if (values.phone.length !== 10) return
-    
     setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    sessionStorage.setItem('phone', values.phone)
-    router.push('/auth/otp')
+    try {
+      await sendOTP(values.phone)
+      sessionStorage.setItem('phone', values.phone)
+      const next =
+        typeof window !== 'undefined'
+          ? new URLSearchParams(window.location.search).get('next')
+          : null
+      const target = next ? `/auth/otp?next=${encodeURIComponent(next)}` : '/auth/otp'
+      router.push(target)
+    } catch (error) {
+      const description =
+        error instanceof ApiError ? error.message : 'Unable to send OTP right now.'
+
+      toast({
+        title: 'Could not send OTP',
+        description,
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -90,6 +108,9 @@ export default function LoginPage() {
                             className="h-12 text-base pl-12"
                             maxLength={10}
                             {...field}
+                            onChange={(event) =>
+                              field.onChange(event.target.value.replace(/\D/g, '').slice(0, 10))
+                            }
                           />
                         </div>
                       </FormControl>
@@ -100,7 +121,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  disabled={isSubmitting || !form.formState.isValid}
+                  disabled={isSubmitting}
                   className="w-full h-12 bg-primary hover:bg-primary/90 text-base font-semibold disabled:opacity-50"
                 >
                   {isSubmitting ? 'Sending OTP...' : 'Continue'}

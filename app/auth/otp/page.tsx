@@ -5,17 +5,22 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from '@/components/ui/input-otp'
-import { ArrowLeft, MessageCircle, RotateCcw, CheckCircle2, XCircle } from 'lucide-react'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
+import { ArrowLeft, MessageCircle, XCircle } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from '@/hooks/use-toast'
+import { ApiError, sendOTP, verifyOTP } from '@/lib/services/auth'
+
+const RESEND_COOLDOWN_SECONDS = process.env.NODE_ENV === 'test' ? 1 : 30
 
 export default function OTPPage() {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [otp, setOtp] = useState('')
   const [isVerifying, setIsVerifying] = useState(false)
+  const [isResending, setIsResending] = useState(false)
   const [phone, setPhone] = useState('')
-  const [resendTimer, setResendTimer] = useState(30)
+  const [resendTimer, setResendTimer] = useState(RESEND_COOLDOWN_SECONDS)
   const [canResend, setCanResend] = useState(false)
   const [error, setError] = useState('')
 
@@ -24,7 +29,7 @@ export default function OTPPage() {
     if (storedPhone) {
       setPhone(storedPhone)
     } else {
-      router.push('/auth/login')
+      router.replace('/auth/login')
     }
   }, [router])
 
@@ -49,24 +54,55 @@ export default function OTPPage() {
     }
 
     setIsVerifying(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    if (otp === '123456') {
-      sessionStorage.removeItem('phone')
-      router.push('/')
-    } else {
-      setError('Invalid OTP. Please try again.')
+    try {
+      await verifyOTP(phone, otp)
+      const next =
+        typeof window !== 'undefined'
+          ? new URLSearchParams(window.location.search).get('next')
+          : null
+      const target = next
+        ? `/auth/complete-profile?next=${encodeURIComponent(next)}`
+        : '/auth/complete-profile'
+      router.push(target)
+    } catch (error) {
+      const message =
+        error instanceof ApiError ? error.message : 'Unable to verify OTP right now.'
+      setError(message)
       setOtp('')
+      toast({
+        title: 'OTP verification failed',
+        description: message,
+        variant: 'destructive',
+      })
+    } finally {
       setIsVerifying(false)
     }
   }
 
   const handleResend = async () => {
-    setCanResend(false)
-    setResendTimer(30)
     setError('')
-    setOtp('')
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    setIsResending(true)
+    try {
+      await sendOTP(phone)
+      setCanResend(false)
+      setResendTimer(RESEND_COOLDOWN_SECONDS)
+      setOtp('')
+      toast({
+        title: 'OTP resent',
+        description: 'A fresh code has been sent to your phone.',
+      })
+    } catch (error) {
+      const message =
+        error instanceof ApiError ? error.message : 'Unable to resend OTP right now.'
+      setError(message)
+      toast({
+        title: 'Could not resend OTP',
+        description: message,
+        variant: 'destructive',
+      })
+    } finally {
+      setIsResending(false)
+    }
   }
 
   const handleOtpChange = (value: string) => {
@@ -157,9 +193,10 @@ export default function OTPPage() {
               {canResend ? (
                 <button
                   onClick={handleResend}
-                  className="text-primary hover:underline font-medium"
+                  disabled={isResending}
+                  className="text-primary hover:underline font-medium disabled:opacity-50"
                 >
-                  Resend OTP
+                  {isResending ? 'Sending...' : 'Resend OTP'}
                 </button>
               ) : (
                 <p className="text-muted-foreground">

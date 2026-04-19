@@ -2,8 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { ChevronDown, LogIn, Gift, Droplet, Menu, X, Globe } from 'lucide-react'
+
+import { useAuth } from '@/contexts/AuthContext'
+import { toast } from '@/hooks/use-toast'
+import { ApiError } from '@/lib/services/auth'
 
 export default function Header() {
   const [languageOpen, setLanguageOpen] = useState(false)
@@ -13,6 +17,8 @@ export default function Header() {
   const langRef = useRef<HTMLDivElement>(null)
 
   const pathname = usePathname()
+  const router = useRouter()
+  const { user, logout } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10)
@@ -29,6 +35,26 @@ export default function Header() {
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      toast({
+        title: 'Logged out',
+        description: 'Your session has been cleared.',
+      })
+      router.push('/auth/login')
+    } catch (error) {
+      const message = error instanceof ApiError ? error.message : 'Unable to log out right now.'
+      toast({
+        title: 'Logout failed',
+        description: message,
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const displayName = [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim()
 
   const navigationLinks = [
     { label: 'Home', href: '/' },
@@ -147,13 +173,26 @@ export default function Header() {
                 )}
               </div>
 
-              {/* Login */}
-              <Link href="/auth/login" className="hidden sm:block">
-                <button className="flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200">
-                  <LogIn className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">Login</span>
-                </button>
-              </Link>
+              {user ? (
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-200">
+                    {displayName || user.phone_number}
+                  </span>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200"
+                  >
+                    <span>Logout</span>
+                  </button>
+                </div>
+              ) : (
+                <Link href="/auth/login" className="hidden sm:block">
+                  <button className="flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200">
+                    <LogIn className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">Login</span>
+                  </button>
+                </Link>
+              )}
 
               {/* Donate CTA */}
               <Link href="/donate">
@@ -212,11 +251,23 @@ export default function Header() {
             </Link>
             <div className="h-px bg-gray-100 dark:bg-white/8 my-2" />
             <div className="flex gap-2 pt-1">
-              <Link href="/auth/login" onClick={() => setMobileOpen(false)} className="flex-1">
-                <button className="w-full h-11 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                  Login
+              {user ? (
+                <button
+                  onClick={() => {
+                    setMobileOpen(false)
+                    void handleLogout()
+                  }}
+                  className="flex-1 w-full h-11 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                >
+                  Logout
                 </button>
-              </Link>
+              ) : (
+                <Link href="/auth/login" onClick={() => setMobileOpen(false)} className="flex-1">
+                  <button className="w-full h-11 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                    Login
+                  </button>
+                </Link>
+              )}
               <Link href="/donate" onClick={() => setMobileOpen(false)} className="flex-1">
                 <button className="w-full h-11 rounded-xl text-[13px] font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 shadow-md shadow-blue-500/20">
                   Donate

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, AlertCircle, Clock, CheckCircle2, Shield, MapPin, ChevronRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import ComplaintForm from '@/components/complaint-form'
+import { useProtectedRoute } from '@/hooks/use-protected-route'
 
 const steps = [
   { icon: AlertCircle,  label: 'Submit Issue',    desc: 'Fill the form below'        },
@@ -20,6 +21,15 @@ const stats = [
 
 export default function FileComplaintPage() {
   const router = useRouter()
+  const { isLoading, user } = useProtectedRoute()
+
+  if (isLoading || !user) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-slate-100">
+        <p className="text-slate-500 text-sm font-medium">Checking your session...</p>
+      </main>
+    )
+  }
 
   return (
     <main
