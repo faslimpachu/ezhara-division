@@ -8,9 +8,15 @@ import { UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from '@/hooks/use-toast'
 import { completeProfile, ApiError } from '@/lib/services/auth'
+
+interface FormErrors {
+  firstName?: string
+  lastName?: string
+}
 
 export default function CompleteProfilePage() {
   const router = useRouter()
@@ -18,7 +24,42 @@ export default function CompleteProfilePage() {
   const [phone, setPhone] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const validateField = (name: string, value: string): string | undefined => {
+    if (!value.trim()) {
+      return `${name === 'firstName' ? 'First name' : 'Last name'} is required`
+    }
+    if (value.trim().length < 2) {
+      return `${name === 'firstName' ? 'First name' : 'Last name'} must be at least 2 characters`
+    }
+    return undefined
+  }
+
+  const handleBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }))
+    const value = field === 'firstName' ? firstName : lastName
+    const error = validateField(field, value)
+    setErrors((prev) => ({ ...prev, [field]: error }))
+  }
+
+  const handleFirstNameChange = (value: string) => {
+    setFirstName(value)
+    if (touched.firstName) {
+      const error = validateField('firstName', value)
+      setErrors((prev) => ({ ...prev, firstName: error }))
+    }
+  }
+
+  const handleLastNameChange = (value: string) => {
+    setLastName(value)
+    if (touched.lastName) {
+      const error = validateField('lastName', value)
+      setErrors((prev) => ({ ...prev, lastName: error }))
+    }
+  }
 
   useEffect(() => {
     const storedPhone = sessionStorage.getItem('phone')
@@ -33,16 +74,17 @@ export default function CompleteProfilePage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (!phone) {
+    const firstNameError = validateField('firstName', firstName)
+    const lastNameError = validateField('lastName', lastName)
+    
+    setTouched({ firstName: true, lastName: true })
+    setErrors({ firstName: firstNameError, lastName: lastNameError })
+
+    if (firstNameError || lastNameError) {
       return
     }
 
-    if (!firstName.trim() || !lastName.trim()) {
-      toast({
-        title: 'Missing details',
-        description: 'First name and last name are required.',
-        variant: 'destructive',
-      })
+    if (!phone) {
       return
     }
 
@@ -98,19 +140,47 @@ export default function CompleteProfilePage() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                value={firstName}
-                onChange={(event) => setFirstName(event.target.value)}
-                placeholder="First name"
-                className="h-12"
-              />
-              <Input
-                value={lastName}
-                onChange={(event) => setLastName(event.target.value)}
-                placeholder="Last name"
-                className="h-12"
-              />
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="firstName" className="text-base font-semibold">
+                  First Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="firstName"
+                  value={firstName}
+                  onChange={(event) => handleFirstNameChange(event.target.value)}
+                  onBlur={() => handleBlur('firstName')}
+                  placeholder="Enter your first name"
+                  className={`h-12 ${errors.firstName && touched.firstName ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                  aria-invalid={!!errors.firstName && touched.firstName}
+                  aria-describedby={errors.firstName && touched.firstName ? 'firstName-error' : undefined}
+                />
+                {errors.firstName && touched.firstName && (
+                  <p id="firstName-error" className="text-sm text-destructive" role="alert">
+                    {errors.firstName}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName" className="text-base font-semibold">
+                  Last Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="lastName"
+                  value={lastName}
+                  onChange={(event) => handleLastNameChange(event.target.value)}
+                  onBlur={() => handleBlur('lastName')}
+                  placeholder="Enter your last name"
+                  className={`h-12 ${errors.lastName && touched.lastName ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                  aria-invalid={!!errors.lastName && touched.lastName}
+                  aria-describedby={errors.lastName && touched.lastName ? 'lastName-error' : undefined}
+                />
+                {errors.lastName && touched.lastName && (
+                  <p id="lastName-error" className="text-sm text-destructive" role="alert">
+                    {errors.lastName}
+                  </p>
+                )}
+              </div>
 
               <Button type="submit" disabled={isSubmitting} className="w-full h-12 text-base font-semibold">
                 {isSubmitting ? 'Completing profile...' : 'Continue'}
