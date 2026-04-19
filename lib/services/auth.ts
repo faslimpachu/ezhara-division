@@ -110,7 +110,11 @@ export async function sendOTP(phone: string) {
 }
 
 export async function verifyOTP(phone: string, otp: string) {
-  return apiRequest<{ success: boolean; user: AuthUser }>('/api/auth/verify-otp/', {
+  return apiRequest<{
+    success: boolean
+    user: AuthUser
+    profile_complete: boolean
+  }>('/api/auth/verify-otp/', {
     method: 'POST',
     body: JSON.stringify({ phone, otp }),
   })

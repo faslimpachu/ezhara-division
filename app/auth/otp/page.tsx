@@ -10,12 +10,14 @@ import { ArrowLeft, MessageCircle, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from '@/hooks/use-toast'
 import { ApiError, sendOTP, verifyOTP } from '@/lib/services/auth'
+import { useAuth } from '@/contexts/AuthContext'
 
 const RESEND_COOLDOWN_SECONDS = process.env.NODE_ENV === 'test' ? 1 : 30
 
 export default function OTPPage() {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
+  const { setUser } = useAuth()
   const [otp, setOtp] = useState('')
   const [isVerifying, setIsVerifying] = useState(false)
   const [isResending, setIsResending] = useState(false)
@@ -46,7 +48,7 @@ export default function OTPPage() {
     inputRef.current?.focus()
   }, [])
 
-  const handleVerify = async () => {
+const handleVerify = async () => {
     setError('')
     if (otp.length !== 6) {
       setError('Please enter the 6-digit OTP')
@@ -55,15 +57,22 @@ export default function OTPPage() {
 
     setIsVerifying(true)
     try {
-      await verifyOTP(phone, otp)
-      const next =
-        typeof window !== 'undefined'
-          ? new URLSearchParams(window.location.search).get('next')
-          : null
-      const target = next
-        ? `/auth/complete-profile?next=${encodeURIComponent(next)}`
-        : '/auth/complete-profile'
-      router.push(target)
+      const response = await verifyOTP(phone, otp)
+      
+      setUser(response.user)
+      
+      const next = typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('next')
+        : null
+
+      if (response.profile_complete) {
+        router.push(next || '/')
+      } else {
+        const target = next
+          ? `/auth/complete-profile?next=${encodeURIComponent(next)}`
+          : '/auth/complete-profile'
+        router.push(target)
+      }
     } catch (error) {
       const message =
         error instanceof ApiError ? error.message : 'Unable to verify OTP right now.'
