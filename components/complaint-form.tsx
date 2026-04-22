@@ -31,6 +31,7 @@ import {
   Camera,
   X,
 } from 'lucide-react'
+import { createComplaint } from '@/lib/services/complaints'
 
 const formSchema = z.object({
   category: z.string().min(1, 'Please select a category'),
@@ -98,17 +99,31 @@ export default function ComplaintForm() {
   const onSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true)
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      
-      // Generate tracking ID
-      const id = `EZH-${Math.random().toString(9).substring(2, 6).toUpperCase()}`
-      setTrackingId(id)
+      const { tracking_id } = await createComplaint({
+        category: values.category,
+        area: values.area,
+        description: values.description,
+        photo: values.photo ? dataURLtoFile(values.photo) : null,
+        reporter_name: values.name || undefined,
+        reporter_phone: values.phone || undefined,
+      })
+      setTrackingId(tracking_id)
     } catch (error) {
       console.error('Error submitting complaint:', error)
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  function dataURLtoFile(dataurl: string): File {
+    const arr = dataurl.split(',')
+    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg'
+    const bstr = atob(arr[1])
+    let n = bstr.length
+    const u8arr = new Uint8Array(n)
+    while (n--) u8arr[n] = bstr.charCodeAt(n)
+    const blob = new Blob([u8arr], { type: mime })
+    return new File([blob], 'photo.jpg', { type: mime })
   }
 
   const handleReset = () => {
