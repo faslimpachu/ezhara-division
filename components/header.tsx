@@ -173,6 +173,9 @@ export default function Header() {
 
               {user ? (
                 <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-[13px] font-semibold text-gray-900 dark:text-white px-3">
+                    {displayName}
+                  </span>
                   <Link href="/dashboard" className="flex items-center gap-2 h-9 px-3 rounded-xl text-[13px] font-semibold text-primary bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-all">
                     <LayoutDashboard className="w-3.5 h-3.5" />
                     <span>Dashboard</span>

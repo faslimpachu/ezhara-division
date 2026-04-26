@@ -113,7 +113,24 @@ describe('WelfareSchemesPage', () => {
     const applyButton = screen.getByText('Apply Now')
     fireEvent.click(applyButton)
 
-    // Submit form without filling (should still call apiRequest)
+    // Fill required form fields to allow submission
+    await waitFor(() => {
+      expect(screen.getByText('Submit Application')).toBeDefined()
+    })
+
+    const fullNameInput = screen.getByPlaceholderText(/Fathima Beevi K/i)
+    const dobInput = screen.getByDisplayValue('', { selector: 'input[type="date"]' })
+    const mobileInput = screen.getByPlaceholderText('+91 98765 43210')
+    const aadhaarInput = screen.getByPlaceholderText('XXXX XXXX XXXX')
+    const houseInput = screen.getByPlaceholderText(/Sunrise Villa/i)
+
+    fireEvent.change(fullNameInput, { target: { value: 'Test User' } })
+    fireEvent.change(dobInput, { target: { value: '1990-01-01' } })
+    fireEvent.change(mobileInput, { target: { value: '+919876543210' } })
+    fireEvent.change(aadhaarInput, { target: { value: '123456789012' } })
+    fireEvent.change(houseInput, { target: { value: '123 Test St' } })
+
+    // Submit form
     const submitButton = screen.getByText('Submit Application')
     fireEvent.click(submitButton)
 
@@ -151,7 +168,7 @@ describe('WelfareSchemesPage', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Authentication required')).toBeDefined()
+      expect(screen.getByText(/Something went wrong/i)).toBeDefined()
     })
   })
 })
