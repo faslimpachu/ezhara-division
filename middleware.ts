@@ -4,7 +4,8 @@ import { NextResponse } from 'next/server'
 const protectedPaths = [
   '/services/file-complaint',
   '/services/welfare-schemes',
-  '/services/volunteer'
+  '/services/volunteer',
+  '/services/sakshyapathram'
 ]
 
 export function middleware(request: NextRequest) {
@@ -25,6 +26,7 @@ export const config = {
   matcher: [
     '/services/file-complaint/:path*',
     '/services/welfare-schemes/:path*',
-    '/services/volunteer/:path*'
+    '/services/volunteer/:path*',
+    '/services/sakshyapathram/:path*'
   ],
 }

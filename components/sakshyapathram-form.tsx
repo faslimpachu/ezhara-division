@@ -17,6 +17,7 @@ import {
   Upload, CheckCircle2, AlertCircle, Loader2, X, ChevronRight,
   Shield, Info, Clock,
 } from 'lucide-react'
+import { createCertificateRequest } from '@/lib/services/certificates'
 
 /* ── Schema ───────────────────────────────── */
 const formSchema = z.object({
@@ -52,8 +53,7 @@ const inputCls = `
 const labelCls = 'text-[11.5px] font-bold uppercase tracking-[0.08em] text-slate-400 mb-1.5 block'
 
 /* ── Success screen ───────────────────────── */
-function SuccessScreen({ certTitle }: { certTitle: string }) {
-  const ref = `SAK-${Math.random().toString(9).substring(2, 8).toUpperCase()}`
+function SuccessScreen({ certTitle, referenceId }: { certTitle: string; referenceId: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.96 }}
@@ -85,7 +85,7 @@ function SuccessScreen({ certTitle }: { certTitle: string }) {
             {/* Reference ID */}
             <div className="flex flex-col items-center gap-1 py-5 px-6 rounded-2xl bg-slate-50 border border-slate-100 mb-3">
               <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400">Reference ID</span>
-              <span className="text-slate-900 font-black text-[1.8rem]" style={{ letterSpacing: '0.06em' }}>{ref}</span>
+              <span className="text-slate-900 font-black text-[1.8rem]" style={{ letterSpacing: '0.06em' }}>{referenceId}</span>
               <span className="text-indigo-500 text-[11px] font-bold">Processing · 3–5 business days</span>
             </div>
 
@@ -119,6 +119,7 @@ export default function SakshyapathramForm() {
   const [selectedType, setSelectedType] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted]   = useState(false)
+  const [referenceId, setReferenceId]   = useState('')
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
 
   const form = useForm<FormValues>({
@@ -129,10 +130,24 @@ export default function SakshyapathramForm() {
   const selectedCert = certTypes.find(c => c.id === selectedType)
 
   const onSubmit = async (values: FormValues) => {
-    setIsSubmitting(true)
-    await new Promise(r => setTimeout(r, 1500))
-    setIsSubmitting(false)
-    setIsSubmitted(true)
+    try {
+      setIsSubmitting(true)
+      const res = await createCertificateRequest({
+        certificate_type: values.certificateType,
+        full_name: values.fullName,
+        house_name: values.houseName,
+        phone: values.phone,
+        aadhaar: values.aadhaar,
+        purpose: values.purpose,
+      })
+      setReferenceId(res.reference_id)
+      setIsSubmitted(true)
+    } catch (error) {
+      console.error('Error submitting certificate request:', error)
+      alert(error instanceof Error ? error.message : 'Failed to submit application')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,7 +157,7 @@ export default function SakshyapathramForm() {
 
   const removeFile = (i: number) => setUploadedFiles(prev => prev.filter((_, idx) => idx !== i))
 
-  if (isSubmitted) return <SuccessScreen certTitle={selectedCert?.title ?? 'Certificate'} />
+  if (isSubmitted) return <SuccessScreen certTitle={selectedCert?.title ?? 'Certificate'} referenceId={referenceId} />
 
   return (
     <div className="min-h-screen" style={{ fontFamily: "'DM Sans', sans-serif", background: '#f1f5f9' }}>
