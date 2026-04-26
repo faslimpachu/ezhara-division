@@ -1,9 +1,13 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import WelfareSchemesPage from './welfare-schemes'
+import { apiRequest } from '@/lib/services/auth'
 
-// Mock the fetch API
+// Mock the fetch API and apiRequest
 global.fetch = vi.fn()
+vi.mock('@/lib/services/auth', () => ({
+  apiRequest: vi.fn(),
+}))
 
 // Mock IntersectionObserver
 global.IntersectionObserver = vi.fn().mockImplementation(() => ({
@@ -66,6 +70,88 @@ describe('WelfareSchemesPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/failed to fetch schemes/i)).toBeDefined()
+    })
+  })
+
+  it('opens application modal when apply button is clicked', async () => {
+    ;(global.fetch as any).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockSchemes)
+    })
+
+    render(<WelfareSchemesPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Old Age Pension')).toBeDefined()
+    })
+
+    const applyButton = screen.getByText('Apply Now')
+    fireEvent.click(applyButton)
+
+    expect(screen.getByText('Apply for Welfare Scheme')).toBeDefined()
+  })
+
+  it('submits application using authenticated apiRequest', async () => {
+    ;(global.fetch as any).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockSchemes)
+    })
+
+    const mockApiRequest = vi.mocked(apiRequest)
+    mockApiRequest.mockResolvedValue({
+      reference_id: 'REF123',
+      success: true
+    })
+
+    render(<WelfareSchemesPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Old Age Pension')).toBeDefined()
+    })
+
+    // Open modal
+    const applyButton = screen.getByText('Apply Now')
+    fireEvent.click(applyButton)
+
+    // Submit form without filling (should still call apiRequest)
+    const submitButton = screen.getByText('Submit Application')
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      expect(mockApiRequest).toHaveBeenCalledWith('/api/welfare-applications/', {
+        method: 'POST',
+        body: expect.any(FormData),
+        headers: {
+          // Don't set Content-Type for FormData
+        }
+      })
+    })
+  })
+
+  it('handles API errors during application submission', async () => {
+    ;(global.fetch as any).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockSchemes)
+    })
+
+    const mockApiRequest = vi.mocked(apiRequest)
+    mockApiRequest.mockRejectedValue(new Error('Authentication required'))
+
+    render(<WelfareSchemesPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Old Age Pension')).toBeDefined()
+    })
+
+    // Open modal and submit
+    const applyButton = screen.getByText('Apply Now')
+    fireEvent.click(applyButton)
+
+    const submitButton = screen.getByText('Submit Application')
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('Authentication required')).toBeDefined()
     })
   })
 })

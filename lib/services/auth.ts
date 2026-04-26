@@ -48,11 +48,12 @@ export function getCookie(name: string): string | undefined {
     .join('=')
 }
 
-async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<ApiSuccess<T>> {
+export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<ApiSuccess<T>> {
   const method = init.method?.toUpperCase() ?? 'GET'
   const headers = new Headers(init.headers)
 
-  if (!headers.has('Content-Type') && init.body) {
+  // Don't set Content-Type for FormData, let the browser handle it
+  if (!headers.has('Content-Type') && init.body && !(init.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json')
   }
 

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
+import { apiRequest } from '@/lib/services/auth'
 import {
   ArrowLeft, Users, Heart, Home, Leaf, Download, ExternalLink,
   FileText, BadgeCheck, Banknote, ChevronDown, ChevronRight,
@@ -244,17 +245,13 @@ function ApplicationModal({
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/welfare-applications/`, {
+      const data = await apiRequest('/api/welfare-applications/', {
         method: 'POST',
         body: formData,
+        headers: {
+          // Don't set Content-Type for FormData, let the browser set it with boundary
+        },
       })
-
-      if (!res.ok) {
-        const errData = await res.json()
-        throw new Error(errData.message || 'Failed to submit application')
-      }
-
-      const data = await res.json()
       setReferenceId(data.reference_id)
       setIsSuccess(true)
     } catch (err: any) {
