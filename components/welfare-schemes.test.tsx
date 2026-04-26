@@ -7,7 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 // Mock the fetch API and apiRequest
 global.fetch = vi.fn()
 vi.mock('@/lib/services/auth', async (importOriginal) => {
-  const actual = await importOriginal()
+  const actual: any = await importOriginal()
   return {
     ...actual,
     apiRequest: vi.fn(),

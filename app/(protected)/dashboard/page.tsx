@@ -95,8 +95,8 @@ export default function DashboardPage() {
 
   const stats = {
     total: allApplications.length,
-    pending: allApplications.filter(a => a.status.toLowerCase() === 'pending').length,
-    resolved: allApplications.filter(a => ['approved', 'resolved', 'completed'].includes(a.status.toLowerCase())).length,
+    pending: allApplications.filter(a => (a.status || '').toLowerCase() === 'pending').length,
+    resolved: allApplications.filter(a => ['approved', 'resolved', 'completed'].includes((a.status || '').toLowerCase())).length,
   }
 
   return (
@@ -221,11 +221,11 @@ export default function DashboardPage() {
                       <div className="flex items-center justify-between sm:justify-end gap-6">
                         <div className={`
                           px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider
-                          ${['pending', 'review'].includes(app.status.toLowerCase()) ? 'bg-amber-50 text-amber-600 border border-amber-100' : ''}
-                          ${['approved', 'resolved', 'completed'].includes(app.status.toLowerCase()) ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : ''}
-                          ${['rejected', 'closed'].includes(app.status.toLowerCase()) ? 'bg-rose-50 text-rose-600 border border-rose-100' : ''}
+                          ${['pending', 'review'].includes((app.status || '').toLowerCase()) ? 'bg-amber-50 text-amber-600 border border-amber-100' : ''}
+                          ${['approved', 'resolved', 'completed'].includes((app.status || '').toLowerCase()) ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : ''}
+                          ${['rejected', 'closed'].includes((app.status || '').toLowerCase()) ? 'bg-rose-50 text-rose-600 border border-rose-100' : ''}
                         `}>
-                          {app.status}
+                          {app.status || 'Pending'}
                         </div>
                         <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                       </div>
@@ -294,11 +294,11 @@ export default function DashboardPage() {
                       <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Current Status</span>
                       <div className={`
                         px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider
-                        ${['pending', 'review'].includes(selectedItem.status.toLowerCase()) ? 'bg-amber-100 text-amber-700' : ''}
-                        ${['approved', 'resolved', 'completed'].includes(selectedItem.status.toLowerCase()) ? 'bg-emerald-100 text-emerald-700' : ''}
-                        ${['rejected', 'closed'].includes(selectedItem.status.toLowerCase()) ? 'bg-rose-100 text-rose-700' : ''}
+                        ${['pending', 'review'].includes((selectedItem.status || '').toLowerCase()) ? 'bg-amber-100 text-amber-700' : ''}
+                        ${['approved', 'resolved', 'completed'].includes((selectedItem.status || '').toLowerCase()) ? 'bg-emerald-100 text-emerald-700' : ''}
+                        ${['rejected', 'closed'].includes((selectedItem.status || '').toLowerCase()) ? 'bg-rose-100 text-rose-700' : ''}
                       `}>
-                        {selectedItem.status}
+                        {selectedItem.status || 'Pending'}
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
