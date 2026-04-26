@@ -7,8 +7,8 @@ import {
   ArrowLeft, Users, Heart, Home, Leaf, Download, ExternalLink,
   FileText, BadgeCheck, Banknote, ChevronDown, ChevronRight,
   CheckCircle2, Clock, XCircle, Info, Phone, X, Upload,
-  ShieldCheck, Loader2, Sparkles,
-  AlertCircle,
+  ShieldCheck, Loader2, Sparkles, AlertCircle,
+  Accessibility, BookOpen, Layers,
 } from 'lucide-react'
 import {
   Dialog, DialogContent, DialogTitle, DialogDescription,
@@ -19,11 +19,11 @@ import {
 
 /* ── Icon Mapping ─────────────────────────────────── */
 const IconMap: Record<string, any> = {
-  Users, Heart, Home, Leaf, FileText,
+  Users, Heart, Home, Leaf, FileText, Accessibility, BookOpen, Layers,
 }
 
 /* ── Data ─────────────────────────────────────────── */
-const API_BASE_URL = 'http://localhost:8000/api' // Adjust based on your backend URL
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`
 
 interface Scheme {
   id: number
@@ -49,17 +49,6 @@ const categoryAccents: Record<string, string> = {
   Farmer: '#16a34a', Health: '#ef4444', Education: '#8b5cf6',
 }
 
-const allSchemeOptions = [
-  'Old Age Pension (Sevana)',
-  'Widow Pension',
-  'Disability Pension',
-  'LIFE Mission Housing',
-  'PM Kisan Samman Nidhi',
-  'Ayushman Bharat Health',
-  'SC/ST Student Scholarship',
-  'Minority Welfare Scholarship',
-  'General / Other Scheme',
-]
 
 /* ── Input style ──────────────────────────────────── */
 const inputCls = `
