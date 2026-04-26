@@ -99,6 +99,8 @@ const getStatusBadgeColor = (
   }
 }
 
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`
+
 export default function TrackComplaintForm() {
   const [trackingId, setTrackingId] = useState('')
   const [complaint, setComplaint] = useState<ComplaintData | null>(null)
@@ -111,18 +113,46 @@ export default function TrackComplaintForm() {
     setIsLoading(true)
     setNotFound(false)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 600))
+    try {
+      const res = await fetch(`${API_BASE_URL}/complaints/${trackingId.toUpperCase()}/`)
+      if (!res.ok) {
+        if (res.status === 404) {
+          setNotFound(true)
+          setComplaint(null)
+          return
+        }
+        throw new Error('Failed to fetch complaint')
+      }
 
-    const found = mockComplaints[trackingId.toUpperCase()]
-    if (found) {
-      setComplaint(found)
-    } else {
+      const data = await res.json()
+      
+      // Map backend to frontend interface
+      const mapped: ComplaintData = {
+        id: data.tracking_id,
+        category: data.category,
+        location: data.area,
+        submittedDate: new Date(data.created_at).toLocaleDateString('en-US', {
+          month: 'short', day: 'numeric', year: 'numeric'
+        }),
+        image: data.photo_url || '',
+        status: (data.status === 'pending' ? 'submitted' : 
+                 data.status === 'under_review' ? 'assigned' : 
+                 data.status === 'action_taken' ? 'in-progress' : 'resolved') as any,
+        officialRemark: data.remarks || 'Your complaint is currently under review by the ward office.',
+        assignedTeam: data.assigned_team || 'Ward 34 Admin Team',
+        assignedDate: new Date(data.updated_at).toLocaleDateString('en-US', {
+          month: 'short', day: 'numeric', year: 'numeric'
+        })
+      }
+      
+      setComplaint(mapped)
+    } catch (err) {
+      console.error(err)
       setNotFound(true)
       setComplaint(null)
+    } finally {
+      setIsLoading(false)
     }
-
-    setIsLoading(false)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -150,7 +180,7 @@ export default function TrackComplaintForm() {
         <Card className="p-6 sm:p-8 border border-border/50">
           <div className="flex flex-col sm:flex-row gap-3">
             <Input
-              placeholder="e.g., EZH-8472"
+              placeholder="e.g., CMP-8472"
               value={trackingId}
               onChange={(e) => setTrackingId(e.target.value.toUpperCase())}
               onKeyPress={handleKeyPress}
@@ -404,8 +434,8 @@ export default function TrackComplaintForm() {
           className="bg-muted/30 border border-border/50 rounded-xl p-6 text-center text-muted-foreground"
         >
           <p className="mb-3">
-            Try these demo tracking IDs: <span className="font-mono font-semibold text-foreground">EZH-8472</span> or{' '}
-            <span className="font-mono font-semibold text-foreground">EZH-5621</span>
+            Try these demo tracking IDs: <span className="font-mono font-semibold text-foreground">CMP-8472</span> or{' '}
+            <span className="font-mono font-semibold text-foreground">CMP-5621</span>
           </p>
           <p className="text-sm">
             Enter your tracking ID above to view real-time status updates

@@ -1,26 +1,31 @@
 import { NextRequest } from 'next/server'
+import { middleware } from './middleware'
 
-import { proxy } from '@/proxy'
+describe('middleware', () => {
+  const protectedRoutes = [
+    '/services/file-complaint',
+    '/services/welfare-schemes',
+    '/services/volunteer'
+  ]
 
-describe('proxy', () => {
-  it('redirects protected routes without a session cookie', () => {
-    const request = new NextRequest('http://localhost:3000/services/file-complaint')
+  protectedRoutes.forEach(route => {
+    it(`redirects ${route} without a session cookie`, () => {
+      const request = new NextRequest(`http://localhost:3000${route}`)
+      const response = middleware(request)
 
-    const response = proxy(request)
-
-    expect(response?.status).toBe(307)
-    expect(response?.headers.get('location')).toContain('/auth/login?next=%2Fservices%2Ffile-complaint')
-  })
-
-  it('allows protected routes with a session cookie', () => {
-    const request = new NextRequest('http://localhost:3000/services/file-complaint', {
-      headers: {
-        cookie: 'sessionid=abc123',
-      },
+      expect(response?.status).toBe(307)
+      expect(response?.headers.get('location')).toContain(`/auth/login?next=${encodeURIComponent(route)}`)
     })
 
-    const response = proxy(request)
-
-    expect(response?.status).toBe(200)
+    it(`allows ${route} with a session cookie`, () => {
+      const request = new NextRequest(`http://localhost:3000${route}`, {
+        headers: {
+          cookie: 'sessionid=abc123',
+        },
+      })
+      const response = middleware(request)
+      // NextResponse.next() returns a 200 by default in tests if successful
+      expect(response?.status).toBe(200)
+    })
   })
 })
