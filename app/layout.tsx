@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Geist_Mono, Noto_Sans_Malayalam } from 'next/font/go
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { LoginModal } from '@/components/LoginModal'
 import './globals.css'
 
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
@@ -42,6 +43,7 @@ export default function RootLayout({
       <body className={`${plusJakarta.className} antialiased bg-background text-foreground`}>
         <AuthProvider>
           {children}
+          <LoginModal />
           <Toaster />
         </AuthProvider>
         <Analytics />

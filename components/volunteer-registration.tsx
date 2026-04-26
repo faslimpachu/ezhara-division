@@ -18,6 +18,7 @@ import {
   BookOpen, AlertTriangle, CheckCircle2, Loader2, ChevronRight,
   Sparkles, Heart,
 } from 'lucide-react'
+import { apiRequest } from '@/lib/services/auth'
 
 /* ── Schema ───────────────────────────────── */
 const formSchema = z.object({
@@ -32,7 +33,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 /* ── Data ─────────────────────────────────── */
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`
+
 
 const interestOptions = [
   { id: 'cleanup', label: 'Beach/Ward Cleanups', icon: Waves, accent: '#06b6d4' },
@@ -167,18 +168,15 @@ export default function VolunteerRegistration() {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/volunteers/`, {
+      const data = await apiRequest<{
+        success: boolean
+        volunteer_id: string
+        full_name: string
+      }>('/api/volunteers/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
 
-      if (!res.ok) {
-        const errData = await res.json()
-        throw new Error(errData.message || 'Failed to register as volunteer')
-      }
-
-      const data = await res.json()
       setName(data.full_name)
       setVolunteerId(data.volunteer_id)
       setSubmitted(true)

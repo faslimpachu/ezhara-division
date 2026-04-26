@@ -86,4 +86,18 @@ describe('auth service', () => {
 
     expect(getCookie('sessionid')).toBe('abc123')
   })
+
+  it('apiRequest throws ApiError on 401 responses', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ detail: 'Authentication credentials were not provided.' }), { status: 401 }),
+    )
+
+    await expect(getCurrentUser()).rejects.toEqual(
+      expect.objectContaining({
+        name: 'ApiError',
+        message: 'Authentication credentials were not provided.',
+        status: 401,
+      }),
+    )
+  })
 })

@@ -15,6 +15,8 @@ type AuthContextValue = {
   refreshUser: () => Promise<AuthUser | null>
   setUser: (user: AuthUser | null) => void
   logout: () => Promise<void>
+  showLoginModal: boolean
+  setShowLoginModal: (show: boolean) => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -22,6 +24,38 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUserState] = useState<AuthUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showLoginModal, setShowLoginModal] = useState(false)
+
+  // Global callback for triggering login modal from any API call
+  useEffect(() => {
+    // @ts-ignore - global function for apiRequest
+    window.triggerLoginModal = () => setShowLoginModal(true)
+
+    // Global fetch interceptor for all API calls
+    const originalFetch = window.fetch
+    window.fetch = async (...args) => {
+      const response = await originalFetch(...args)
+
+      // Check if this is an API call to our backend
+      const url = typeof args[0] === 'string' ? args[0] : args[0] instanceof URL ? args[0].href : args[0]?.url
+      const isApiCall = url?.includes('/api/') || url?.includes('localhost:8000') || url?.includes('127.0.0.1:8000')
+
+      // For API calls that return 401, trigger the login modal
+      // This will work for any service that makes API calls, not just apiRequest
+      if (isApiCall && response.status === 401) {
+        setShowLoginModal(true)
+      }
+
+      return response
+    }
+
+    return () => {
+      // @ts-ignore
+      delete window.triggerLoginModal
+      // Restore original fetch
+      window.fetch = originalFetch
+    }
+  }, [])
 
   const setUser = (nextUser: AuthUser | null) => {
     startTransition(() => {
@@ -76,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, refreshUser, setUser, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, refreshUser, setUser, logout, showLoginModal, setShowLoginModal }}>
       {children}
     </AuthContext.Provider>
   )
