@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -8,6 +8,7 @@ import {
   FileText, BadgeCheck, Banknote, ChevronDown, ChevronRight,
   CheckCircle2, Clock, XCircle, Info, Phone, X, Upload,
   ShieldCheck, Loader2, Sparkles,
+  AlertCircle,
 } from 'lucide-react'
 import {
   Dialog, DialogContent, DialogTitle, DialogDescription,
@@ -16,45 +17,25 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 
+/* ── Icon Mapping ─────────────────────────────────── */
+const IconMap: Record<string, any> = {
+  Users, Heart, Home, Leaf, FileText,
+}
+
 /* ── Data ─────────────────────────────────────────── */
-const schemes = [
-  {
-    id: 1, name: 'Old Age Pension (Sevana)', category: 'Pensions', icon: Users, status: 'open',
-    benefit: '₹1,600 / month', accent: '#3b82f6',
-    eligibility: ['Age 60 years or above', 'Kerala resident for minimum 3 years', 'Annual income below ₹1 Lakh'],
-    documents: ['Aadhaar Card', 'Birth Certificate', 'Income Certificate', 'Bank Passbook'],
-  },
-  {
-    id: 2, name: 'Widow Pension', category: 'Pensions', icon: Heart, status: 'open',
-    benefit: '₹1,600 / month', accent: '#f43f5e',
-    eligibility: ['Widow aged 30 years or above', 'Resident of Kerala', 'Annual income below ₹1 Lakh'],
-    documents: ['Aadhaar Card', 'Marriage Certificate', 'Death Certificate', 'Income Certificate'],
-  },
-  {
-    id: 3, name: 'LIFE Mission Housing', category: 'Housing', icon: Home, status: 'open',
-    benefit: 'Free Housing', accent: '#10b981',
-    eligibility: ['Homeless or substandard housing', 'Annual income below specified limits', 'Registered in PMAY or LIS'],
-    documents: ['Aadhaar Card', 'Income Certificate', 'Property Documents', 'House Verification'],
-  },
-  {
-    id: 4, name: 'PM Kisan Samman Nidhi', category: 'Farmer', icon: Leaf, status: 'open',
-    benefit: '₹6,000 / year', accent: '#16a34a',
-    eligibility: ['Landholding farmers', 'Land up to 2 hectares', 'All eligible farmers irrespective of income'],
-    documents: ['Aadhaar Card', 'Land Records', 'Bank Passbook'],
-  },
-  {
-    id: 5, name: 'Ayushman Bharat Health', category: 'Health', icon: Heart, status: 'open',
-    benefit: '₹5 Lakh coverage', accent: '#ef4444',
-    eligibility: ['Below poverty line families', 'APL families (state determined)', 'Beneficiaries in SECC'],
-    documents: ['Aadhaar Card', 'BPL Certificate', 'Ration Card'],
-  },
-  {
-    id: 6, name: 'SC/ST Student Scholarship', category: 'Education', icon: FileText, status: 'closed',
-    benefit: '₹5,000 – ₹20,000', accent: '#8b5cf6',
-    eligibility: ['SC/ST caste students', 'Studying in recognized institutions', 'Annual income below specified limits'],
-    documents: ['Aadhaar Card', 'Caste Certificate', 'Income Certificate', 'Student ID'],
-  },
-]
+const API_BASE_URL = 'http://localhost:8000/api' // Adjust based on your backend URL
+
+interface Scheme {
+  id: number
+  name: string
+  category: string
+  benefit: string
+  status: 'open' | 'closed'
+  accent_color: string
+  eligibility: string[]
+  documents: string[]
+  icon_name: string
+}
 
 const processSteps = [
   { icon: FileText,  title: 'Gather Docs',          desc: 'Collect all required documents' },
@@ -88,9 +69,9 @@ const inputCls = `
 `.trim()
 
 /* ── Scheme card ──────────────────────────────────── */
-function SchemeCard({ scheme, i, onApply }: { scheme: typeof schemes[0]; i: number; onApply: (name: string) => void }) {
+function SchemeCard({ scheme, i, onApply }: { scheme: Scheme; i: number; onApply: (name: string) => void }) {
   const [openSection, setOpenSection] = useState<string | null>(null)
-  const Icon = scheme.icon
+  const Icon = IconMap[scheme.icon_name] || Users
   const isOpen = scheme.status === 'open'
 
   const toggle = (sec: string) => setOpenSection(prev => prev === sec ? null : sec)
@@ -104,12 +85,12 @@ function SchemeCard({ scheme, i, onApply }: { scheme: typeof schemes[0]; i: numb
       style={{ boxShadow: '0 1px 6px rgba(0,0,0,0.04)' }}
     >
       {/* Left accent strip */}
-      <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: scheme.accent }} />
+      <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: scheme.accent_color }} />
 
       {/* Top slide bar on hover */}
       <div
         className="absolute top-0 left-0 right-0 h-[2px] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"
-        style={{ background: `linear-gradient(90deg, ${scheme.accent}, ${scheme.accent}44)` }}
+        style={{ background: `linear-gradient(90deg, ${scheme.accent_color}, ${scheme.accent_color}44)` }}
       />
 
       <div className="pl-6 pr-5 pt-5 pb-5 flex flex-col flex-1 gap-4">
@@ -118,9 +99,9 @@ function SchemeCard({ scheme, i, onApply }: { scheme: typeof schemes[0]; i: numb
           <div className="flex items-start gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-transform duration-200 group-hover:scale-110"
-              style={{ background: `${scheme.accent}12`, border: `1.5px solid ${scheme.accent}28` }}
+              style={{ background: `${scheme.accent_color}12`, border: `1.5px solid ${scheme.accent_color}28` }}
             >
-              <Icon className="w-5 h-5" style={{ color: scheme.accent }} />
+              <Icon className="w-5 h-5" color={scheme.accent_color} />
             </div>
             <div>
               <h3 className="text-slate-900 font-bold text-[14px] leading-snug">{scheme.name}</h3>
@@ -145,12 +126,12 @@ function SchemeCard({ scheme, i, onApply }: { scheme: typeof schemes[0]; i: numb
         {/* Benefit pill */}
         <div
           className="flex items-center gap-3 px-4 py-3 rounded-2xl"
-          style={{ background: `${scheme.accent}08`, border: `1px solid ${scheme.accent}18` }}
+          style={{ background: `${scheme.accent_color}08`, border: `1px solid ${scheme.accent_color}18` }}
         >
-          <Banknote className="w-4 h-4 flex-shrink-0" style={{ color: scheme.accent }} />
+          <Banknote className="w-4 h-4 flex-shrink-0" color={scheme.accent_color} />
           <div>
             <p className="text-slate-400 text-[10.5px] font-semibold uppercase tracking-wider">Benefit</p>
-            <p className="font-black text-[1.1rem] leading-tight" style={{ color: scheme.accent, letterSpacing: '-0.02em' }}>
+            <p className="font-black text-[1.1rem] leading-tight" style={{ color: scheme.accent_color, letterSpacing: '-0.02em' }}>
               {scheme.benefit}
             </p>
           </div>
@@ -159,8 +140,8 @@ function SchemeCard({ scheme, i, onApply }: { scheme: typeof schemes[0]; i: numb
         {/* Accordions */}
         <div className="flex flex-col gap-1.5">
           {[
-            { key: 'eligibility', label: 'Who can apply?',       items: scheme.eligibility, dotColor: scheme.accent },
-            { key: 'documents',   label: 'Documents Required',   items: scheme.documents,   dotColor: scheme.accent },
+            { key: 'eligibility', label: 'Who can apply?',       items: scheme.eligibility, dotColor: scheme.accent_color },
+            { key: 'documents',   label: 'Documents Required',   items: scheme.documents,   dotColor: scheme.accent_color },
           ].map(({ key, label, items, dotColor }) => (
             <div key={key} className="rounded-xl border border-slate-100 overflow-hidden">
               <button
@@ -205,7 +186,7 @@ function SchemeCard({ scheme, i, onApply }: { scheme: typeof schemes[0]; i: numb
             <button
               onClick={() => onApply(scheme.name)}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12.5px] font-bold text-white transition-all duration-200 hover:-translate-y-px"
-              style={{ background: `linear-gradient(135deg, ${scheme.accent}, ${scheme.accent}cc)`, boxShadow: `0 3px 12px ${scheme.accent}30` }}
+              style={{ background: `linear-gradient(135deg, ${scheme.accent_color}, ${scheme.accent_color}cc)`, boxShadow: `0 3px 12px ${scheme.accent_color}30` }}
             >
               <ExternalLink className="w-3.5 h-3.5" /> Apply Now
             </button>
@@ -223,18 +204,33 @@ function SchemeCard({ scheme, i, onApply }: { scheme: typeof schemes[0]; i: numb
 
 /* ── Application Modal ────────────────────────────── */
 function ApplicationModal({
-  open, onClose, preselectedScheme,
-}: { open: boolean; onClose: () => void; preselectedScheme: string }) {
-  const [selectedScheme, setSelectedScheme] = useState(preselectedScheme)
+  open, onClose, preselectedScheme, schemes,
+}: { open: boolean; onClose: () => void; preselectedScheme: string; schemes: Scheme[] }) {
+  const [selectedSchemeName, setSelectedSchemeName] = useState(preselectedScheme)
   const [isSubmitting, setIsSubmitting]     = useState(false)
   const [isSuccess, setIsSuccess]           = useState(false)
+  const [error, setError]                   = useState<string | null>(null)
+  const [referenceId, setReferenceId]       = useState('')
   const [uploadedFile, setUploadedFile]     = useState<File | null>(null)
   const [isDragging, setIsDragging]         = useState(false)
+
+  const formRef = useRef<HTMLFormElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   // Sync preselected scheme when modal opens with a new scheme
+  useEffect(() => {
+    if (open) {
+      setSelectedSchemeName(preselectedScheme)
+      setIsSuccess(false)
+      setError(null)
+      setUploadedFile(null)
+      if (formRef.current) formRef.current.reset()
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }, [open, preselectedScheme])
+
   const handleOpenChange = (o: boolean) => {
-    if (!o) { onClose(); setIsSuccess(false); setSelectedScheme(preselectedScheme) }
+    if (!o) onClose()
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -243,12 +239,40 @@ function ApplicationModal({
     if (file) setUploadedFile(file)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
-    await new Promise(r => setTimeout(r, 1800))
-    setIsSubmitting(false)
-    setIsSuccess(true)
+    setError(null)
+
+    const formData = new FormData(e.currentTarget)
+    const scheme = schemes.find(s => s.name === selectedSchemeName)
+    if (scheme) {
+      formData.append('scheme', scheme.id.toString())
+    }
+
+    if (uploadedFile) {
+      formData.append('uploaded_file', uploadedFile)
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/welfare-applications/`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const errData = await res.json()
+        throw new Error(errData.message || 'Failed to submit application')
+      }
+
+      const data = await res.json()
+      setReferenceId(data.reference_id)
+      setIsSuccess(true)
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -256,6 +280,7 @@ function ApplicationModal({
       <DialogContent
         className="p-0 border-0 bg-transparent shadow-none max-w-lg w-full"
         style={{ fontFamily: "'DM Sans', sans-serif" }}
+        showCloseButton={false}
       >
         <AnimatePresence mode="wait">
           {!isSuccess ? (
@@ -293,7 +318,7 @@ function ApplicationModal({
 
               {/* Scrollable form body */}
               <div className="overflow-y-auto max-h-[70vh]">
-                <form onSubmit={handleSubmit}>
+                <form ref={formRef} onSubmit={handleSubmit}>
                   <div className="px-7 py-6 space-y-5">
 
                     {/* Scheme select */}
@@ -301,24 +326,24 @@ function ApplicationModal({
                       <label className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mb-1.5 block">
                         Selected Scheme *
                       </label>
-                      <Select value={selectedScheme} onValueChange={setSelectedScheme}>
+                      <Select value={selectedSchemeName} onValueChange={setSelectedSchemeName}>
                         <SelectTrigger className={`${inputCls} flex items-center gap-2`}>
                           <SelectValue placeholder="Choose a scheme" />
                         </SelectTrigger>
                         <SelectContent>
-                          {allSchemeOptions.map(s => (
-                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          {schemes.map(s => (
+                            <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      {selectedScheme && (
+                      {selectedSchemeName && (
                         <motion.div
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-50 border border-blue-100"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
-                          <span className="text-blue-600 text-[12px] font-semibold">{selectedScheme} — auto-selected</span>
+                          <span className="text-blue-600 text-[12px] font-semibold">{selectedSchemeName} — selected</span>
                         </motion.div>
                       )}
                     </div>
@@ -333,19 +358,19 @@ function ApplicationModal({
                     {/* Full name */}
                     <div>
                       <label className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mb-1.5 block">Full Name (as per Aadhaar) *</label>
-                      <input required placeholder="e.g. Fathima Beevi K" className={inputCls} />
+                      <input required name="full_name" placeholder="e.g. Fathima Beevi K" className={inputCls} />
                     </div>
 
                     {/* DOB + Mobile */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mb-1.5 block">Date of Birth *</label>
-                        <input required type="date" className={inputCls} />
+                        <input required name="dob" type="date" className={inputCls} />
                       </div>
                       <div>
                         <label className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mb-1.5 block">Mobile Number *</label>
                         <div className="relative">
-                          <input required type="tel" placeholder="+91 98765 43210" className={inputCls} />
+                          <input required name="mobile_number" type="tel" placeholder="+91 98765 43210" className={inputCls} />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-blue-500 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
                             Send OTP
                           </span>
@@ -359,6 +384,7 @@ function ApplicationModal({
                       <div className="relative">
                         <input
                           required
+                          name="aadhaar_number"
                           type="text"
                           placeholder="XXXX  XXXX  XXXX"
                           maxLength={14}
@@ -380,12 +406,13 @@ function ApplicationModal({
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mb-1.5 block">House Name / Number *</label>
-                        <input required placeholder="e.g. Sunrise Villa, 14B" className={inputCls} />
+                        <input required name="house_name_number" placeholder="e.g. Sunrise Villa, 14B" className={inputCls} />
                       </div>
                       <div>
                         <label className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mb-1.5 block">Division / Ward</label>
                         <input
                           disabled
+                          name="division_ward"
                           value="Ezhara Division 34"
                           className={`${inputCls} opacity-50 cursor-not-allowed`}
                         />
@@ -438,13 +465,24 @@ function ApplicationModal({
                           onChange={e => { const f = e.target.files?.[0]; if (f) setUploadedFile(f) }} />
                       </div>
                     </div>
+
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="px-4 py-3 rounded-xl bg-red-50 border border-red-100 flex items-center gap-3 text-red-600"
+                      >
+                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        <p className="text-[12.5px] font-medium">{error}</p>
+                      </motion.div>
+                    )}
                   </div>
 
                   {/* Footer */}
                   <div className="px-7 pb-7 pt-2">
                     <motion.button
                       type="submit"
-                      disabled={isSubmitting || !selectedScheme}
+                      disabled={isSubmitting || !selectedSchemeName}
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 22 }}
@@ -488,12 +526,12 @@ function ApplicationModal({
                 </motion.div>
                 <h3 className="text-slate-900 font-black text-[1.5rem] mb-2" style={{ letterSpacing: '-0.03em' }}>Application Submitted!</h3>
                 <p className="text-slate-400 text-[13.5px] leading-relaxed max-w-xs mx-auto mb-6">
-                  Your <strong className="text-slate-600">{selectedScheme}</strong> application has been received by the ward office.
+                  Your <strong className="text-slate-600">{selectedSchemeName}</strong> application has been received by the ward office.
                 </p>
                 <div className="flex flex-col items-center gap-1 py-4 px-6 rounded-2xl bg-slate-50 border border-slate-100 mb-6">
                   <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400">Reference ID</span>
                   <span className="text-slate-900 font-black text-[1.7rem]" style={{ letterSpacing: '0.06em' }}>
-                    WLF-{Math.random().toString(9).substring(2, 8).toUpperCase()}
+                    {referenceId}
                   </span>
                   <span className="text-emerald-500 text-[11px] font-bold">Processing · 5–7 business days</span>
                 </div>
@@ -515,9 +553,28 @@ function ApplicationModal({
 
 /* ── Main page ────────────────────────────────────── */
 export default function WelfareSchemesPage() {
+  const [schemes, setSchemes]           = useState<Scheme[]>([])
+  const [isLoading, setIsLoading]       = useState(true)
+  const [fetchError, setFetchError]     = useState<string | null>(null)
   const [selectedCategory, setCategory] = useState('All')
   const [modalOpen, setModalOpen]       = useState(false)
   const [activeScheme, setActiveScheme] = useState('')
+
+  useEffect(() => {
+    const fetchSchemes = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/welfare-schemes/`)
+        if (!res.ok) throw new Error('Failed to fetch schemes')
+        const data = await res.json()
+        setSchemes(data)
+      } catch (err: any) {
+        setFetchError(err.message || 'Could not load welfare schemes.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchSchemes()
+  }, [])
 
   const openModal = (schemeName: string) => { setActiveScheme(schemeName); setModalOpen(true) }
 
@@ -667,18 +724,51 @@ export default function WelfareSchemesPage() {
         </div>
 
         <AnimatePresence mode="wait">
-          <motion.div
-            key={selectedCategory}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.28 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-4"
-          >
-            {filtered.map((scheme, i) => (
-              <SchemeCard key={scheme.id} scheme={scheme} i={i} onApply={openModal} />
-            ))}
-          </motion.div>
+          {isLoading ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center py-20"
+            >
+              <Loader2 className="w-10 h-10 text-emerald-500 animate-spin mb-4" />
+              <p className="text-slate-400 font-medium">Loading schemes...</p>
+            </motion.div>
+          ) : fetchError ? (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center py-20 text-center"
+            >
+              <div className="w-16 h-16 rounded-3xl bg-red-50 flex items-center justify-center mb-4">
+                <AlertCircle className="w-8 h-8 text-red-500" />
+              </div>
+              <p className="text-slate-800 font-bold mb-1">Oops! Something went wrong</p>
+              <p className="text-slate-400 text-[13.5px] max-w-xs">{fetchError}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-6 px-5 py-2 rounded-xl bg-slate-900 text-white text-[13px] font-bold hover:bg-slate-800 transition-colors"
+              >
+                Try Again
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key={selectedCategory}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.28 }}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+            >
+              {filtered.map((scheme, i) => (
+                <SchemeCard key={scheme.id} scheme={scheme} i={i} onApply={openModal} />
+              ))}
+            </motion.div>
+          )}
         </AnimatePresence>
 
         {/* Help banner */}
@@ -722,6 +812,7 @@ export default function WelfareSchemesPage() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         preselectedScheme={activeScheme}
+        schemes={schemes}
       />
 
       <style>{`
