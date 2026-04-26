@@ -32,6 +32,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 /* ── Data ─────────────────────────────────── */
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`
+
 const interestOptions = [
   { id: 'cleanup',  label: 'Beach/Ward Cleanups',       icon: Waves,         accent: '#06b6d4' },
   { id: 'blood',    label: 'Blood Donation Camps',       icon: Droplet,       accent: '#ef4444' },
@@ -58,8 +60,7 @@ const inputCls = `
 const labelCls = 'text-[12px] font-bold text-slate-500 uppercase tracking-[0.08em] mb-1.5 block'
 
 /* ── Success screen ───────────────────────── */
-function SuccessScreen({ name }: { name: string }) {
-  const id = `VOL-${Math.random().toString(9).substring(2, 8).toUpperCase()}`
+function SuccessScreen({ name, volunteerId }: { name: string, volunteerId: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -101,7 +102,7 @@ function SuccessScreen({ name }: { name: string }) {
             <div className="flex flex-col items-center gap-1 py-5 px-6 rounded-2xl bg-slate-50 border border-slate-100 mb-8">
               <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400">Your Volunteer ID</span>
               <span className="text-slate-900 font-black text-[1.8rem] tracking-widest" style={{ letterSpacing: '0.08em' }}>
-                {id}
+                {volunteerId}
               </span>
               <span className="text-emerald-500 text-[11px] font-bold">Active · Verified</span>
             </div>
@@ -135,6 +136,8 @@ export default function VolunteerRegistration() {
   const [submitted, setSubmitted]     = useState(false)
   const [isSubmitting, setSubmitting] = useState(false)
   const [volunteerName, setName]      = useState('')
+  const [volunteerId, setVolunteerId] = useState('')
+  const [error, setError]             = useState<string | null>(null)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -150,13 +153,43 @@ export default function VolunteerRegistration() {
 
   const onSubmit = async (values: FormValues) => {
     setSubmitting(true)
-    setName(values.fullName)
-    await new Promise(r => setTimeout(r, 1500))
-    setSubmitting(false)
-    setSubmitted(true)
+    setError(null)
+    
+    // Map fields to backend expectations
+    const payload = {
+      full_name: values.fullName,
+      mobile: values.mobile,
+      email: values.email,
+      dob: values.dateOfBirth,
+      profession: values.profession,
+      interests: values.interests,
+      availability: values.availability
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/volunteers/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const errData = await res.json()
+        throw new Error(errData.message || 'Failed to register as volunteer')
+      }
+
+      const data = await res.json()
+      setName(data.full_name)
+      setVolunteerId(data.volunteer_id)
+      setSubmitted(true)
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
-  if (submitted) return <SuccessScreen name={volunteerName} />
+  if (submitted) return <SuccessScreen name={volunteerName} volunteerId={volunteerId} />
 
   return (
     <div className="min-h-screen" style={{ fontFamily: "'DM Sans', sans-serif", background: '#f1f5f9' }}>
@@ -267,9 +300,9 @@ export default function VolunteerRegistration() {
                   <div className="px-7 py-6 space-y-5">
                     <FormField control={form.control} name="fullName" render={({ field }) => (
                       <FormItem>
-                        <label className={labelCls}>Full Name *</label>
+                        <label htmlFor="fullName" className={labelCls}>Full Name *</label>
                         <FormControl>
-                          <input placeholder="Your full name" className={inputCls} {...field} />
+                          <input id="fullName" placeholder="Your full name" className={inputCls} {...field} />
                         </FormControl>
                         <FormMessage className="text-[12px] text-red-500 mt-1" />
                       </FormItem>
@@ -278,18 +311,18 @@ export default function VolunteerRegistration() {
                     <div className="grid sm:grid-cols-2 gap-5">
                       <FormField control={form.control} name="mobile" render={({ field }) => (
                         <FormItem>
-                          <label className={labelCls}>Mobile Number *</label>
+                          <label htmlFor="mobile" className={labelCls}>Mobile Number *</label>
                           <FormControl>
-                            <input type="tel" placeholder="+91 98765 43210" className={inputCls} {...field} />
+                            <input id="mobile" type="tel" placeholder="+91 98765 43210" className={inputCls} {...field} />
                           </FormControl>
                           <FormMessage className="text-[12px] text-red-500 mt-1" />
                         </FormItem>
                       )} />
                       <FormField control={form.control} name="email" render={({ field }) => (
                         <FormItem>
-                          <label className={labelCls}>Email Address *</label>
+                          <label htmlFor="email" className={labelCls}>Email Address *</label>
                           <FormControl>
-                            <input type="email" placeholder="you@example.com" className={inputCls} {...field} />
+                            <input id="email" type="email" placeholder="you@example.com" className={inputCls} {...field} />
                           </FormControl>
                           <FormMessage className="text-[12px] text-red-500 mt-1" />
                         </FormItem>
@@ -299,9 +332,9 @@ export default function VolunteerRegistration() {
                     <div className="grid sm:grid-cols-2 gap-5">
                       <FormField control={form.control} name="dateOfBirth" render={({ field }) => (
                         <FormItem>
-                          <label className={labelCls}>Date of Birth *</label>
+                          <label htmlFor="dateOfBirth" className={labelCls}>Date of Birth *</label>
                           <FormControl>
-                            <input type="date" className={inputCls} {...field} />
+                            <input id="dateOfBirth" type="date" className={inputCls} {...field} />
                           </FormControl>
                           <FormMessage className="text-[12px] text-red-500 mt-1" />
                         </FormItem>
@@ -425,6 +458,17 @@ export default function VolunteerRegistration() {
                     )} />
                   </div>
                 </div>
+
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="px-4 py-3 rounded-xl bg-red-50 border border-red-100 flex items-center gap-3 text-red-600"
+                  >
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                    <p className="text-[12.5px] font-medium">{error}</p>
+                  </motion.div>
+                )}
 
                 {/* Submit */}
                 <motion.button
