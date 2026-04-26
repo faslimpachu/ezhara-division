@@ -14,7 +14,7 @@ import {
 } from '@/lib/emergency-contacts-data'
 
 /* ── Icon map ───────────────────────────── */
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+const iconMap: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
   Shield, Flame, Phone, Heart, AlertTriangle, Stethoscope,
   AlertCircle, Building2, Eye, Zap, Droplet, Mail, Users, Building, CloudRain,
 }

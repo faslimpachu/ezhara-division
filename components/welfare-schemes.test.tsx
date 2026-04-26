@@ -119,7 +119,7 @@ describe('WelfareSchemesPage', () => {
     })
 
     const fullNameInput = screen.getByPlaceholderText(/Fathima Beevi K/i)
-    const dobInput = screen.getByDisplayValue('', { selector: 'input[type="date"]' })
+    const dobInput = screen.getByLabelText(/Date of Birth/i)
     const mobileInput = screen.getByPlaceholderText('+91 98765 43210')
     const aadhaarInput = screen.getByPlaceholderText('XXXX XXXX XXXX')
     const houseInput = screen.getByPlaceholderText(/Sunrise Villa/i)
@@ -168,7 +168,7 @@ describe('WelfareSchemesPage', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/Something went wrong/i)).toBeDefined()
+      expect(screen.getByText(/Authentication required/i)).toBeDefined()
     })
   })
 })

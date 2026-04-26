@@ -251,7 +251,7 @@ function ApplicationModal({
         headers: {
           // Don't set Content-Type for FormData, let the browser set it with boundary
         },
-      })
+      }) as any
       setReferenceId(data.reference_id)
       setIsSuccess(true)
     } catch (err: any) {
@@ -265,10 +265,10 @@ function ApplicationModal({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className="p-0 border-0 bg-transparent shadow-none max-w-lg w-full"
-        style={{ fontFamily: "'DM Sans', sans-serif" }}
         showCloseButton={false}
       >
-        <AnimatePresence mode="wait">
+        <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <AnimatePresence mode="wait">
           {!isSuccess ? (
             <motion.div
               key="form"
@@ -350,8 +350,8 @@ function ApplicationModal({
                     {/* DOB + Mobile */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mb-1.5 block">Date of Birth *</label>
-                        <input required name="dob" type="date" className={inputCls} />
+                        <label htmlFor="dob" className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mb-1.5 block">Date of Birth *</label>
+                        <input id="dob" required name="dob" type="date" className={inputCls} />
                       </div>
                       <div>
                         <label className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mb-1.5 block">Mobile Number *</label>
@@ -532,6 +532,7 @@ function ApplicationModal({
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </DialogContent>
     </Dialog>
   )
@@ -551,7 +552,7 @@ export default function WelfareSchemesPage() {
       try {
         const res = await fetch(`${API_BASE_URL}/welfare-schemes/`)
         if (!res.ok) throw new Error('Failed to fetch schemes')
-        const data = await res.json()
+        const data = await res.json() as any
         setSchemes(data)
       } catch (err: any) {
         setFetchError(err.message || 'Could not load welfare schemes.')

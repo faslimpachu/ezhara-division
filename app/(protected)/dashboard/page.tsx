@@ -82,7 +82,16 @@ export default function DashboardPage() {
 
   const filteredApps = activeTab === 'all' 
     ? allApplications 
-    : allApplications.filter(app => app.type.toLowerCase() === activeTab)
+    : allApplications.filter(app => {
+        const type = app.type.toLowerCase()
+        const tabToType: Record<string, string> = {
+          'welfare': 'welfare',
+          'certificates': 'certificate',
+          'complaints': 'complaint',
+          'volunteer': 'volunteer'
+        }
+        return type === tabToType[activeTab]
+      })
 
   const stats = {
     total: allApplications.length,

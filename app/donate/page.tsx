@@ -65,7 +65,7 @@ const testimonials = [
 ]
 
 export default function DonatePage() {
-  const [selectedAmount, setSelectedAmount] = useState(null)
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const [customAmount, setCustomAmount] = useState('')
   const [isDonating, setIsDonating] = useState(false)
 
@@ -173,7 +173,7 @@ export default function DonatePage() {
               disabled={
                 isDonating ||
                 (!selectedAmount && !customAmount) ||
-                (customAmount && parseInt(customAmount) < 10)
+                (!!customAmount && parseInt(customAmount) < 10)
               }
               className="w-full h-12 bg-primary hover:bg-primary/90 text-base font-semibold gap-2"
             >
