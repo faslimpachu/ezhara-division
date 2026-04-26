@@ -21,12 +21,12 @@ import {
 
 /* ── Schema ───────────────────────────────── */
 const formSchema = z.object({
-  fullName:     z.string().min(3, 'Full name is required'),
-  mobile:       z.string().min(10, 'Valid phone number required'),
-  email:        z.string().email('Valid email required'),
-  dateOfBirth:  z.string().min(1, 'Date of birth required'),
-  profession:   z.string().min(1, 'Please select your profession'),
-  interests:    z.array(z.string()).min(1, 'Select at least one area'),
+  fullName: z.string().min(3, 'Full name is required'),
+  mobile: z.string().min(10, 'Valid phone number required'),
+  email: z.string().email('Valid email required'),
+  dateOfBirth: z.string().min(1, 'Date of birth required'),
+  profession: z.string().min(1, 'Please select your profession'),
+  interests: z.array(z.string()).min(1, 'Select at least one area'),
   availability: z.string().min(1, 'Please select availability'),
 })
 type FormValues = z.infer<typeof formSchema>
@@ -35,18 +35,18 @@ type FormValues = z.infer<typeof formSchema>
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`
 
 const interestOptions = [
-  { id: 'cleanup',  label: 'Beach/Ward Cleanups',       icon: Waves,         accent: '#06b6d4' },
-  { id: 'blood',    label: 'Blood Donation Camps',       icon: Droplet,       accent: '#ef4444' },
-  { id: 'tech',     label: 'Tech Support for Elderly',   icon: Code,          accent: '#8b5cf6' },
-  { id: 'teaching', label: 'Teaching & Mentoring',       icon: BookOpen,      accent: '#f59e0b' },
-  { id: 'disaster', label: 'Disaster Relief',            icon: AlertTriangle, accent: '#f97316' },
-  { id: 'events',   label: 'Event Management',           icon: Zap,           accent: '#10b981' },
+  { id: 'cleanup', label: 'Beach/Ward Cleanups', icon: Waves, accent: '#06b6d4' },
+  { id: 'blood', label: 'Blood Donation Camps', icon: Droplet, accent: '#ef4444' },
+  { id: 'tech', label: 'Tech Support for Elderly', icon: Code, accent: '#8b5cf6' },
+  { id: 'teaching', label: 'Teaching & Mentoring', icon: BookOpen, accent: '#f59e0b' },
+  { id: 'disaster', label: 'Disaster Relief', icon: AlertTriangle, accent: '#f97316' },
+  { id: 'events', label: 'Event Management', icon: Zap, accent: '#10b981' },
 ]
 
 const perks = [
-  { icon: Award,  title: 'Official Recognition', desc: 'Earn a digital certificate signed by Councilor Faslim T.P.', accent: '#f59e0b' },
-  { icon: Users,  title: 'Build Connections',    desc: 'Meet like-minded residents and local leaders in Ward 34.',   accent: '#3b82f6' },
-  { icon: Zap,    title: 'Real Impact',          desc: 'Directly contribute to Make in Ezhara and EYIS projects.',  accent: '#10b981' },
+  { icon: Award, title: 'Official Recognition', desc: 'Earn a digital certificate signed by Councilor Faslim T.P.', accent: '#f59e0b' },
+  { icon: Users, title: 'Build Connections', desc: 'Meet like-minded residents and local leaders in Ward 34.', accent: '#3b82f6' },
+  { icon: Zap, title: 'Real Impact', desc: 'Directly contribute to Make in Ezhara and EYIS projects.', accent: '#10b981' },
 ]
 
 /* ── Shared field style ───────────────────── */
@@ -133,11 +133,11 @@ function SuccessScreen({ name, volunteerId }: { name: string, volunteerId: strin
 
 /* ── Main component ───────────────────────── */
 export default function VolunteerRegistration() {
-  const [submitted, setSubmitted]     = useState(false)
+  const [submitted, setSubmitted] = useState(false)
   const [isSubmitting, setSubmitting] = useState(false)
-  const [volunteerName, setName]      = useState('')
+  const [volunteerName, setName] = useState('')
   const [volunteerId, setVolunteerId] = useState('')
-  const [error, setError]             = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -154,7 +154,7 @@ export default function VolunteerRegistration() {
   const onSubmit = async (values: FormValues) => {
     setSubmitting(true)
     setError(null)
-    
+
     // Map fields to backend expectations
     const payload = {
       full_name: values.fullName,
@@ -349,7 +349,7 @@ export default function VolunteerRegistration() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {['Student','Employed','Business Owner','Retired','Homemaker','Other'].map(v => (
+                              {['Student', 'Employed', 'Business Owner', 'Retired', 'Homemaker', 'Other'].map(v => (
                                 <SelectItem key={v} value={v.toLowerCase().replace(' ', '-')}>{v}</SelectItem>
                               ))}
                             </SelectContent>

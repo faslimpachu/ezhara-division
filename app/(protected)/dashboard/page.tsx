@@ -16,7 +16,8 @@ import {
   Search,
   Filter,
   ExternalLink,
-  Loader2
+  Loader2,
+  ArrowLeft
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -97,9 +98,18 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="h-px w-5 bg-primary/40" />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Personal Command Center</span>
+              <div className="flex items-center gap-4 mb-4">
+                <a 
+                  href="/" 
+                  className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-all border border-slate-100"
+                  title="Back to Home"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </a>
+                <div className="flex items-center gap-2">
+                  <div className="h-px w-5 bg-primary/40" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Personal Command Center</span>
+                </div>
               </div>
               <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
                 Welcome back, <span className="text-primary">{user.first_name}</span>

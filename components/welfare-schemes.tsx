@@ -38,10 +38,10 @@ interface Scheme {
 }
 
 const processSteps = [
-  { icon: FileText,  title: 'Gather Docs',          desc: 'Collect all required documents' },
-  { icon: Home,      title: 'Submit',               desc: 'At Akshaya or Ward Office' },
-  { icon: BadgeCheck,title: 'Verification',         desc: 'Councilor reviews application' },
-  { icon: Banknote,  title: 'Disbursement',         desc: 'Funds transferred directly' },
+  { icon: FileText, title: 'Gather Docs', desc: 'Collect all required documents' },
+  { icon: Home, title: 'Submit', desc: 'At Akshaya or Ward Office' },
+  { icon: BadgeCheck, title: 'Verification', desc: 'Councilor reviews application' },
+  { icon: Banknote, title: 'Disbursement', desc: 'Funds transferred directly' },
 ]
 
 const categoryAccents: Record<string, string> = {
@@ -129,8 +129,8 @@ function SchemeCard({ scheme, i, onApply }: { scheme: Scheme; i: number; onApply
         {/* Accordions */}
         <div className="flex flex-col gap-1.5">
           {[
-            { key: 'eligibility', label: 'Who can apply?',       items: scheme.eligibility, dotColor: scheme.accent_color },
-            { key: 'documents',   label: 'Documents Required',   items: scheme.documents,   dotColor: scheme.accent_color },
+            { key: 'eligibility', label: 'Who can apply?', items: scheme.eligibility, dotColor: scheme.accent_color },
+            { key: 'documents', label: 'Documents Required', items: scheme.documents, dotColor: scheme.accent_color },
           ].map(({ key, label, items, dotColor }) => (
             <div key={key} className="rounded-xl border border-slate-100 overflow-hidden">
               <button
@@ -196,12 +196,12 @@ function ApplicationModal({
   open, onClose, preselectedScheme, schemes,
 }: { open: boolean; onClose: () => void; preselectedScheme: string; schemes: Scheme[] }) {
   const [selectedSchemeName, setSelectedSchemeName] = useState(preselectedScheme)
-  const [isSubmitting, setIsSubmitting]     = useState(false)
-  const [isSuccess, setIsSuccess]           = useState(false)
-  const [error, setError]                   = useState<string | null>(null)
-  const [referenceId, setReferenceId]       = useState('')
-  const [uploadedFile, setUploadedFile]     = useState<File | null>(null)
-  const [isDragging, setIsDragging]         = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [referenceId, setReferenceId] = useState('')
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   const formRef = useRef<HTMLFormElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -542,11 +542,11 @@ function ApplicationModal({
 
 /* ── Main page ────────────────────────────────────── */
 export default function WelfareSchemesPage() {
-  const [schemes, setSchemes]           = useState<Scheme[]>([])
-  const [isLoading, setIsLoading]       = useState(true)
-  const [fetchError, setFetchError]     = useState<string | null>(null)
+  const [schemes, setSchemes] = useState<Scheme[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [selectedCategory, setCategory] = useState('All')
-  const [modalOpen, setModalOpen]       = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
   const [activeScheme, setActiveScheme] = useState('')
 
   useEffect(() => {
@@ -570,7 +570,7 @@ export default function WelfareSchemesPage() {
   const categories = ['All', ...Array.from(new Set(schemes.map(s => s.category)))]
   const filtered = selectedCategory === 'All' ? schemes : schemes.filter(s => s.category === selectedCategory)
 
-  const openCount  = filtered.filter(s => s.status === 'open').length
+  const openCount = filtered.filter(s => s.status === 'open').length
   const totalCount = filtered.length
 
   return (
@@ -628,9 +628,9 @@ export default function WelfareSchemesPage() {
             >
               {[
                 { value: `${openCount}`, label: 'Open Schemes', color: '#10b981' },
-                { value: `${totalCount}`,  label: 'Total Schemes', color: '#3b82f6' },
-                { value: '5', label: 'Categories',       color: '#8b5cf6' },
-                { value: '24h', label: 'Response Time',  color: '#f59e0b' },
+                { value: `${totalCount}`, label: 'Total Schemes', color: '#3b82f6' },
+                { value: '5', label: 'Categories', color: '#8b5cf6' },
+                { value: '24h', label: 'Response Time', color: '#f59e0b' },
               ].map((s, i) => (
                 <div key={i} className="flex flex-col gap-1 p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
                   <span className="font-black text-[1.3rem] leading-none" style={{ color: s.color, letterSpacing: '-0.04em' }}>{s.value}</span>
