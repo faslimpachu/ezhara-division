@@ -67,7 +67,7 @@ export async function createComplaint(payload: ComplaintPayload): Promise<Create
 }
 
 export async function getComplaint(trackingId: string): Promise<ComplaintData> {
-  const response = await fetch(`${BACKEND_URL}/api/complaints/${trackingId}/`, {
+  const response = await fetch(`${BACKEND_URL}/api/complaints/public/${trackingId}/`, {
     credentials: 'include',
   })
 

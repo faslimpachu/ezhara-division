@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { ChevronDown, LogIn, Gift, Droplet, Menu, X, Globe } from 'lucide-react'
+import { ChevronDown, LogIn, Gift, Droplet, Menu, X, Globe, LayoutDashboard } from 'lucide-react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from '@/hooks/use-toast'
@@ -60,15 +60,13 @@ export default function Header() {
     { label: 'Home', href: '/' },
     { label: 'Services', href: '/services' },
     { label: 'Programs', href: '/initiatives' },
+    ...(user ? [{ label: 'Dashboard', href: '/dashboard' }] : []),
     { label: 'About', href: '/about' },
     { label: 'Contact', href: '/contact' },
   ]
 
   return (
     <>
-      {/* Top accent bar */}
-      {/* <div className="h-[3px] w-full bg-gradient-to-r from-blue-700 via-sky-500 to-blue-600" /> */}
-
       <header
         style={{
           fontFamily: "'DM Sans', 'Outfit', sans-serif",
@@ -175,9 +173,10 @@ export default function Header() {
 
               {user ? (
                 <div className="hidden sm:flex items-center gap-2">
-                  <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-200">
-                    {displayName || user.phone_number}
-                  </span>
+                  <Link href="/dashboard" className="flex items-center gap-2 h-9 px-3 rounded-xl text-[13px] font-semibold text-primary bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-all">
+                    <LayoutDashboard className="w-3.5 h-3.5" />
+                    <span>Dashboard</span>
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200"
