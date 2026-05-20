@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { ChevronDown, LogIn, Droplet, Menu, X, Globe, LayoutDashboard } from 'lucide-react'
+import { ChevronDown, LogIn, Droplet, Menu, X, Globe, LayoutDashboard, User } from 'lucide-react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from '@/hooks/use-toast'
@@ -175,10 +175,6 @@ export default function Header() {
                   <span className="text-[13px] font-semibold text-gray-900 dark:text-white px-3">
                     {displayName}
                   </span>
-                  <Link href="/dashboard" className="flex items-center gap-2 h-9 px-3 rounded-xl text-[13px] font-semibold text-primary bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-all">
-                    <LayoutDashboard className="w-3.5 h-3.5" />
-                    <span>Dashboard</span>
-                  </Link>
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200"
@@ -201,6 +197,15 @@ export default function Header() {
                   <span className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-out" />
                   <LayoutDashboard className="w-3.5 h-3.5 relative z-10" />
                   <span className="relative z-10">Dashboard</span>
+                </button>
+              </Link>
+
+              <Link href="/profile">
+                <button className="flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-bold text-white relative overflow-hidden group/btn transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 hover:-translate-y-px">
+                  <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 group-hover/btn:from-blue-500 group-hover/btn:to-blue-600 transition-all duration-300" />
+                  <span className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-out" />
+                  <User className="w-3.5 h-3.5 relative z-10" />
+                  <span className="relative z-10">{displayName || 'Profile'}</span>
                 </button>
               </Link>
 
