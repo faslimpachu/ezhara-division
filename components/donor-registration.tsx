@@ -30,6 +30,8 @@ const formSchema = z.object({
   age: z.string().min(1, 'Age is required'),
   bloodGroup: z.string().min(1, 'Blood group is required'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  district: z.string().min(1, 'District is required'),
+  address: z.string().min(5, 'Address must be at least 5 characters'),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -45,6 +47,8 @@ export default function DonorRegistration() {
       age: '',
       bloodGroup: '',
       phone: '',
+      district: '',
+      address: '',
     },
   })
 
@@ -156,13 +160,34 @@ export default function DonorRegistration() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="name"
+                name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-semibold">Full Name</FormLabel>
+                    <FormLabel className="text-base font-semibold">Phone Number</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Your full name"
+                        type="tel"
+                        placeholder="Your phone number"
+                        className="h-12 text-base"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="district"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-semibold">District</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Your district"
                         className="h-12 text-base"
                         {...field}
                       />
@@ -174,14 +199,13 @@ export default function DonorRegistration() {
 
               <FormField
                 control={form.control}
-                name="age"
+                name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-semibold">Age</FormLabel>
+                    <FormLabel className="text-base font-semibold">Address</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        placeholder="Your age"
+                        placeholder="Your full address"
                         className="h-12 text-base"
                         {...field}
                       />
@@ -191,6 +215,7 @@ export default function DonorRegistration() {
                 )}
               />
             </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
