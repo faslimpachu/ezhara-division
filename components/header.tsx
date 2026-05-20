@@ -54,7 +54,11 @@ export default function Header() {
     }
   }
 
-  const displayName = [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim()
+  const displayName = [user?.first_name, user?.last_name]
+    .filter(Boolean)
+    .map((n) => n.charAt(0).toUpperCase() + n.slice(1).toLowerCase())
+    .join(' ')
+    .trim()
 
   const navigationLinks = [
     { label: 'Home', href: '/' },
@@ -193,7 +197,7 @@ export default function Header() {
                   <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 group-hover/btn:from-blue-500 group-hover/btn:to-blue-600 transition-all duration-300" />
                   <span className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-out" />
                   <User className="w-3.5 h-3.5 relative z-10" />
-                  <span className="relative z-10">{displayName || 'Profile'}</span>
+                  <span className="relative z-10 max-w-[110px] truncate">{displayName || 'Profile'}</span>
                 </button>
               </Link>
 
