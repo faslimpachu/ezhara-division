@@ -43,3 +43,28 @@ export async function createBloodDonor(payload: BloodDonorPayload): Promise<Crea
 
   return data as CreateBloodDonorResponse
 }
+
+export type BloodDonor = {
+  id: number
+  donor_id: string
+  age: number
+  blood_group: string
+  district: string
+  address: string
+  status: string
+  created_at: string
+  name?: string
+  phone?: string
+}
+
+export async function getBloodDonors(): Promise<BloodDonor[]> {
+  const response = await fetch(`${BACKEND_URL}/api/blood-donors/`, {
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch donors')
+  }
+
+  return response.json()
+}

@@ -1,4 +1,4 @@
-import { createBloodDonor } from './blood-donors'
+import { createBloodDonor, getBloodDonors } from './blood-donors'
 
 describe('blood-donors service', () => {
   beforeEach(() => {
@@ -38,5 +38,15 @@ describe('blood-donors service', () => {
     await expect(
       createBloodDonor({ age: 0, blood_group: '', district: '', address: '' })
     ).rejects.toThrow()
+  })
+
+  it('fetches donors list', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify([{ donor_id: 'EZH-B-1', age: 30, blood_group: 'O+', district: 'Kannur', address: '', status: 'approved', created_at: '' }]), { status: 200 }),
+    )
+
+    const result = await getBloodDonors()
+    expect(result.length).toBe(1)
+    expect(result[0].donor_id).toBe('EZH-B-1')
   })
 })

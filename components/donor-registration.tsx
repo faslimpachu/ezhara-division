@@ -233,13 +233,29 @@ export default function DonorRegistration() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base font-semibold">District</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Your district"
-                        className="h-12 text-base"
-                        {...field}
-                      />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-12 text-base">
+                          <SelectValue placeholder="Select district" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Alappuzha">Alappuzha</SelectItem>
+                        <SelectItem value="Ernakulam">Ernakulam</SelectItem>
+                        <SelectItem value="Idukki">Idukki</SelectItem>
+                        <SelectItem value="Kannur">Kannur</SelectItem>
+                        <SelectItem value="Kasaragod">Kasaragod</SelectItem>
+                        <SelectItem value="Kollam">Kollam</SelectItem>
+                        <SelectItem value="Kottayam">Kottayam</SelectItem>
+                        <SelectItem value="Kozhikode">Kozhikode</SelectItem>
+                        <SelectItem value="Malappuram">Malappuram</SelectItem>
+                        <SelectItem value="Palakkad">Palakkad</SelectItem>
+                        <SelectItem value="Pathanamthitta">Pathanamthitta</SelectItem>
+                        <SelectItem value="Thiruvananthapuram">Thiruvananthapuram</SelectItem>
+                        <SelectItem value="Thrissur">Thrissur</SelectItem>
+                        <SelectItem value="Wayanad">Wayanad</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

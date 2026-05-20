@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { getBloodDonors, BloodDonor as ApiDonor } from '@/lib/services/blood-donors'
 import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -22,73 +23,45 @@ interface Donor {
   location: string
   lastDonated: string
   phone: string
+  status: string
 }
-
-const sampleDonors: Donor[] = [
-  {
-    id: 'EZH-B-1045',
-    name: 'Rajesh Kumar',
-    bloodGroup: 'O+',
-    age: 32,
-    location: 'Ezhara',
-    lastDonated: '3 months ago',
-    phone: '+91-9876543210',
-  },
-  {
-    id: 'EZH-B-1046',
-    name: 'Priya Sharma',
-    bloodGroup: 'A+',
-    age: 28,
-    location: 'Chalad',
-    lastDonated: '6 months ago',
-    phone: '+91-9876543211',
-  },
-  {
-    id: 'EZH-B-1047',
-    name: 'Arjun Nair',
-    bloodGroup: 'B+',
-    age: 35,
-    location: 'Edakkad',
-    lastDonated: '1 month ago',
-    phone: '+91-9876543212',
-  },
-  {
-    id: 'EZH-B-1048',
-    name: 'Anjali Das',
-    bloodGroup: 'AB-',
-    age: 26,
-    location: 'Ezhara',
-    lastDonated: '4 months ago',
-    phone: '+91-9876543213',
-  },
-  {
-    id: 'EZH-B-1049',
-    name: 'Vikram Singh',
-    bloodGroup: 'O-',
-    age: 42,
-    location: 'Chalad',
-    lastDonated: '2 months ago',
-    phone: '+91-9876543214',
-  },
-  {
-    id: 'EZH-B-1050',
-    name: 'Sneha Menon',
-    bloodGroup: 'A-',
-    age: 30,
-    location: 'Ezhara',
-    lastDonated: '5 months ago',
-    phone: '+91-9876543215',
-  },
-]
 
 export default function DonorDatabase() {
   const [searchTerm, setSearchTerm] = useState('')
   const [bloodGroup, setBloodGroup] = useState('all')
   const [location, setLocation] = useState('all')
   const [ageGroup, setAgeGroup] = useState('all')
+  const [donors, setDonors] = useState<Donor[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchDonors = async () => {
+      try {
+        const apiDonors: ApiDonor[] = await getBloodDonors()
+        const mapped: Donor[] = apiDonors
+          .filter((d) => d.status === 'approved')
+          .map((d) => ({
+          id: d.donor_id,
+          name: d.name || 'Registered Donor',
+          bloodGroup: d.blood_group,
+          age: d.age,
+          location: `${d.district}${d.address ? ', ' + d.address : ''}`,
+          lastDonated: 'Recently',
+          phone: d.phone || '+91-0000000000',
+          status: d.status || 'pending',
+        }))
+        setDonors(mapped)
+      } catch (e) {
+        setDonors([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchDonors()
+  }, [])
 
   const filteredDonors = useMemo(() => {
-    return sampleDonors.filter((donor) => {
+    return donors.filter((donor) => {
       const matchesSearch =
         donor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         donor.id.includes(searchTerm.toUpperCase())
@@ -103,7 +76,7 @@ export default function DonorDatabase() {
 
       return matchesSearch && matchesBloodGroup && matchesLocation && matchesAge
     })
-  }, [searchTerm, bloodGroup, location, ageGroup])
+  }, [searchTerm, bloodGroup, location, ageGroup, donors])
 
   const isRecentDonor = (lastDonated: string) => {
     return lastDonated.includes('1 month') || lastDonated.includes('2 month')
@@ -201,8 +174,9 @@ export default function DonorDatabase() {
                   <th className="text-left p-4 font-semibold text-foreground">Blood Group</th>
                   <th className="text-left p-4 font-semibold text-foreground">Age</th>
                   <th className="text-left p-4 font-semibold text-foreground">Location</th>
-                  <th className="text-left p-4 font-semibold text-foreground">Last Donated</th>
-                  <th className="text-center p-4 font-semibold text-foreground">Action</th>
+                    <th className="text-left p-4 font-semibold text-foreground">Last Donated</th>
+                    <th className="text-left p-4 font-semibold text-foreground">Status</th>
+                    <th className="text-center p-4 font-semibold text-foreground">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -235,6 +209,11 @@ export default function DonorDatabase() {
                         }`}
                       >
                         {donor.lastDonated}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${donor.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                        {donor.status}
                       </span>
                     </td>
                     <td className="p-4 text-center">
@@ -282,6 +261,9 @@ export default function DonorDatabase() {
                         }`}
                       >
                         {donor.lastDonated}
+                      </span>
+                      <span className={`inline-block ml-2 px-2 py-1 rounded text-xs font-semibold ${donor.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                        {donor.status}
                       </span>
                     </div>
                   </div>
