@@ -48,8 +48,7 @@ export default function BloodBankPage() {
       <Header />
       <BloodBankHero />
       <BloodBankStats />
-      <BloodBankEmergencyBar />
-      <DonorDatabase />
+      
 
       {/* ══════════════════════════════════════════════
           BECOME A DONOR

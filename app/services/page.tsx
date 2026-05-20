@@ -19,7 +19,7 @@ import Footer from '@/components/footer'
 const quickServices = [
   { icon: FileText,      title: 'File a Complaint',       description: 'Submit civic issues directly to the ward office.', accent: '#3b82f6', tag: 'Civic',    href: '/services/file-complaint' },
   { icon: CheckCircle,   title: 'Track Complaint',        description: 'Follow up on your submitted complaints live.',      accent: '#8b5cf6', tag: 'Status',   href: '/services/track-complaint' },
-  { icon: HeartHandshake,title: 'Request Blood',          description: 'Emergency blood requests, responded within 1hr.',   accent: '#ef4444', tag: 'Urgent',   href: '/services/blood-bank', badge: 'Urgent' },
+  { icon: HeartHandshake,title: 'Request Blood',          description: 'Emergency blood requests, responded within 1hr.',   accent: '#ef4444', tag: 'Urgent',   href: '/services/request-blood', badge: 'Urgent' },
   { icon: Droplet,       title: 'Donate Blood',           description: 'Register as a donor and save lives.',               accent: '#f43f5e', tag: 'Health',   href: '/services/blood-bank' },
   { icon: Heart,         title: 'Welfare Schemes',        description: 'Apply for government benefit programs.',             accent: '#ec4899', tag: 'Benefits', href: '/services/welfare-schemes' },
   { icon: Stethoscope,   title: 'Health Services',        description: 'Public health programs and consultations.',          accent: '#10b981', tag: 'Health',   href: '/services/health' },

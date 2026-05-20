@@ -44,7 +44,7 @@ const services = [
     accent: '#ef4444',
     bg: 'rgba(239,68,68,0.08)',
     border: 'rgba(239,68,68,0.18)',
-    href: '/services/blood-bank',
+    href: '/services/request-blood',
     badge: 'Urgent',
   },
   {
