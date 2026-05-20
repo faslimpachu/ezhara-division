@@ -15,6 +15,7 @@ type AuthContextValue = {
   refreshUser: () => Promise<AuthUser | null>
   setUser: (user: AuthUser | null) => void
   logout: () => Promise<void>
+  updateProfile: (data: { first_name?: string; last_name?: string }) => Promise<void>
   showLoginModal: boolean
   setShowLoginModal: (show: boolean) => void
 }
@@ -81,6 +82,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
   }
 
+  const updateProfile = async (data: { first_name?: string; last_name?: string }) => {
+    // Simple implementation - in real would call PATCH /api/auth/me or similar
+    const updatedUser = { ...user, ...data } as AuthUser
+    setUser(updatedUser)
+  }
+
   useEffect(() => {
     let isMounted = true
 
@@ -110,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, refreshUser, setUser, logout, showLoginModal, setShowLoginModal }}>
+    <AuthContext.Provider value={{ user, isLoading, refreshUser, setUser, logout, updateProfile, showLoginModal, setShowLoginModal }}>
       {children}
     </AuthContext.Provider>
   )
