@@ -22,8 +22,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (user && !user.is_staff) {
-      router.push('/dashboard')
+    if (!user?.is_superuser) {
+      router.push('/admin/login')
       return
     }
 
@@ -43,8 +43,8 @@ export default function AdminDashboard() {
     fetchData()
   }, [user, router])
 
-  if (!user?.is_staff) {
-    return <div className="p-8 text-center">Access denied. Superuser only.</div>
+  if (!user?.is_superuser) {
+    return null
   }
 
   return (

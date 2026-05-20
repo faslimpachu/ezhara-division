@@ -5,6 +5,8 @@ export type AuthUser = {
   first_name: string
   last_name: string
   is_customer: boolean
+  is_staff?: boolean
+  is_superuser?: boolean
 }
 
 export type CompleteProfilePayload = {
@@ -136,5 +138,15 @@ export async function logout() {
   return apiRequest<{ success: boolean }>('/api/auth/logout/', {
     method: 'POST',
     body: JSON.stringify({}),
+  })
+}
+
+export async function adminLogin(username: string, password: string) {
+  return apiRequest<{
+    success: boolean
+    user: AuthUser & { is_staff?: boolean; is_superuser?: boolean }
+  }>('/api/auth/admin-login/', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
   })
 }
