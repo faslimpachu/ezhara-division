@@ -60,7 +60,6 @@ export default function Header() {
     { label: 'Home', href: '/' },
     { label: 'Services', href: '/services' },
     { label: 'Programs', href: '/initiatives' },
-    ...(user ? [{ label: 'Dashboard', href: '/dashboard' }] : []),
     { label: 'About', href: '/about' },
     { label: 'Contact', href: '/contact' },
   ]
