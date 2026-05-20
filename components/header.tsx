@@ -170,19 +170,7 @@ export default function Header() {
                 )}
               </div>
 
-              {user ? (
-                <div className="hidden sm:flex items-center gap-2">
-                  <span className="text-[13px] font-semibold text-gray-900 dark:text-white px-3">
-                    {displayName}
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200"
-                  >
-                    <span>Logout</span>
-                  </button>
-                </div>
-              ) : (
+              {user ? null : (
                 <Link href="/auth/login" className="hidden sm:block">
                   <button className="flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200">
                     <LogIn className="w-3.5 h-3.5" />
