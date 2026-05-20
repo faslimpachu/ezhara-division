@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { User, Phone } from 'lucide-react'
+import { User, Phone, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
@@ -62,6 +63,10 @@ export default function ProfilePage() {
       >
         <Card className="border border-border/50 bg-card/95 backdrop-blur-xl shadow-xl">
           <div className="p-8 sm:p-10">
+            <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+            </Link>
+
             <div className="mb-8 text-center">
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-primary/10 text-primary mb-4">
                 <User className="w-7 h-7" />
