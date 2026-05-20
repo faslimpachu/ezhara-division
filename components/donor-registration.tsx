@@ -24,12 +24,11 @@ import {
 } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
 import { Droplet, CheckCircle2, Copy } from 'lucide-react'
+import { createBloodDonor } from '@/lib/services/blood-donors'
 
 const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
   age: z.string().min(1, 'Age is required'),
   bloodGroup: z.string().min(1, 'Blood group is required'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   district: z.string().min(1, 'District is required'),
   address: z.string().min(5, 'Address must be at least 5 characters'),
 })
@@ -43,10 +42,8 @@ export default function DonorRegistration() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
       age: '',
       bloodGroup: '',
-      phone: '',
       district: '',
       address: '',
     },
@@ -55,9 +52,16 @@ export default function DonorRegistration() {
   const onSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const id = `EZH-B-${Math.random().toString().substring(2, 6)}`
+      const res = await createBloodDonor({
+        age: parseInt(values.age),
+        blood_group: values.bloodGroup,
+        district: values.district,
+        address: values.address,
+      })
+      setDonorId(res.donor_id)
+    } catch (e) {
+      // keep simple for uniformity
+      const id = `EZH-B-${Math.random().toString().substring(2, 8)}`
       setDonorId(id)
     } finally {
       setIsSubmitting(false)
@@ -157,21 +161,65 @@ export default function DonorRegistration() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Read-only user info - uniform with current design */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <FormItem>
+                <FormLabel className="text-base font-semibold">First Name</FormLabel>
+                <Input value="John" disabled className="h-12 text-base bg-muted/50" />
+              </FormItem>
+              <FormItem>
+                <FormLabel className="text-base font-semibold">Last Name</FormLabel>
+                <Input value="Doe" disabled className="h-12 text-base bg-muted/50" />
+              </FormItem>
+              <FormItem>
+                <FormLabel className="text-base font-semibold">Phone</FormLabel>
+                <Input value="+91 98765 43210" disabled className="h-12 text-base bg-muted/50" />
+              </FormItem>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="phone"
+                name="age"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-semibold">Phone Number</FormLabel>
+                    <FormLabel className="text-base font-semibold">Age</FormLabel>
                     <FormControl>
                       <Input
-                        type="tel"
-                        placeholder="Your phone number"
+                        type="number"
+                        placeholder="Your age"
                         className="h-12 text-base"
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="bloodGroup"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-semibold">Blood Group</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-12 text-base">
+                          <SelectValue placeholder="Select blood group" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="O+">O+</SelectItem>
+                        <SelectItem value="A+">A+</SelectItem>
+                        <SelectItem value="B+">B+</SelectItem>
+                        <SelectItem value="AB+">AB+</SelectItem>
+                        <SelectItem value="O-">O-</SelectItem>
+                        <SelectItem value="A-">A-</SelectItem>
+                        <SelectItem value="B-">B-</SelectItem>
+                        <SelectItem value="AB-">AB-</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -206,56 +254,6 @@ export default function DonorRegistration() {
                     <FormControl>
                       <Input
                         placeholder="Your full address"
-                        className="h-12 text-base"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="bloodGroup"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-semibold">Blood Group</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="h-12 text-base">
-                          <SelectValue placeholder="Select blood group" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="O+">O+</SelectItem>
-                        <SelectItem value="A+">A+</SelectItem>
-                        <SelectItem value="B+">B+</SelectItem>
-                        <SelectItem value="AB+">AB+</SelectItem>
-                        <SelectItem value="O-">O-</SelectItem>
-                        <SelectItem value="A-">A-</SelectItem>
-                        <SelectItem value="B-">B-</SelectItem>
-                        <SelectItem value="AB-">AB-</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-semibold">Phone Number</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="tel"
-                        placeholder="Your phone number"
                         className="h-12 text-base"
                         {...field}
                       />

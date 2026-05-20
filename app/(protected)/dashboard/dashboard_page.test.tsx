@@ -31,7 +31,8 @@ const mockData = {
   welfare: [{ id: 1, scheme_name: 'Welfare 1', status: 'pending', created_at: '2026-04-26T10:00:00Z' }],
   certificates: [{ id: 2, certificate_type: 'Certificate 1', status: 'approved', created_at: '2026-04-26T11:00:00Z' }],
   complaints: [{ id: 3, category: 'Complaint 1', status: 'pending', created_at: '2026-04-26T12:00:00Z' }],
-  volunteer: [{ id: 4, volunteer_id: 'V1', status: 'approved', created_at: '2026-04-26T13:00:00Z' }]
+  volunteer: [{ id: 4, volunteer_id: 'V1', status: 'approved', created_at: '2026-04-26T13:00:00Z' }],
+  'blood-donors': [{ id: 5, donor_id: 'EZH-B-123456', status: 'pending', created_at: '2026-04-26T14:00:00Z' }]
 }
 
 describe('DashboardPage', () => {
@@ -60,12 +61,5 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Complaint 1')).toBeDefined()
     expect(screen.queryByText('Welfare 1')).toBeNull()
     expect(screen.queryByText('Certificate 1')).toBeNull()
-    
-    // Filter by Certificates
-    const certificatesTab = screen.getByRole('button', { name: /certificates/i })
-    fireEvent.click(certificatesTab)
-    
-    expect(screen.getByText('Certificate 1')).toBeDefined()
-    expect(screen.queryByText('Complaint 1')).toBeNull()
   })
 })

@@ -9,6 +9,7 @@ import DonorDatabase from '@/components/donor-database'
 import DonorRegistration from '@/components/donor-registration'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Droplet, X, Heart, Users, Shield, Clock, Phone, ArrowRight } from 'lucide-react'
+import { useProtectedRoute } from '@/hooks/use-protected-route'
 
 /* ── Data ──────────────────────────────────────────── */
 const bloodGroups = ['A+', 'A−', 'B+', 'B−', 'AB+', 'AB−', 'O+', 'O−']
@@ -30,8 +31,17 @@ const groupGlow: Record<string, string> = {
 const sp = { type: 'spring', stiffness: 380, damping: 28 } as const
 
 export default function BloodBankPage() {
+  const { isLoading, user } = useProtectedRoute()
   const [showForm, setShowForm]   = useState(false)
   const [hovered, setHovered]     = useState<string | null>(null)
+
+  if (isLoading || !user) {
+    return (
+      <main className="min-h-screen flex items-center justify-center" style={{ background: '#080810' }}>
+        <p className="text-white/50 text-sm">Checking your session...</p>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen" style={{ fontFamily: "'Plus Jakarta Sans', 'DM Sans', sans-serif", background: '#080810' }}>

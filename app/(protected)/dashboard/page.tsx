@@ -8,6 +8,7 @@ import {
   MessageSquare, 
   Heart, 
   UserCheck,
+  Droplet,
   ChevronRight,
   Clock,
   CheckCircle2,
@@ -44,7 +45,7 @@ export default function DashboardPage() {
     volunteer: any[]
   } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'all' | 'welfare' | 'certificates' | 'complaints' | 'volunteer'>('all')
+  const [activeTab, setActiveTab] = useState<'all' | 'welfare' | 'certificates' | 'complaints' | 'volunteer' | 'blood-donors'>('all')
   const [selectedItem, setSelectedItem] = useState<Application | null>(null)
 
   useEffect(() => {
@@ -78,6 +79,7 @@ export default function DashboardPage() {
     ...data.certificates.map(i => ({ ...i, type: 'Certificate' })),
     ...data.complaints.map(i => ({ ...i, type: 'Complaint' })),
     ...data.volunteer.map(i => ({ ...i, type: 'Volunteer' })),
+    ...(data['blood-donors'] || []).map(i => ({ ...i, type: 'Blood Donor' })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) : []
 
   const filteredApps = activeTab === 'all' 
@@ -88,7 +90,8 @@ export default function DashboardPage() {
           'welfare': 'welfare',
           'certificates': 'certificate',
           'complaints': 'complaint',
-          'volunteer': 'volunteer'
+          'volunteer': 'volunteer',
+          'blood-donors': 'blood donor'
         }
         return type === tabToType[activeTab]
       })
@@ -150,7 +153,7 @@ export default function DashboardPage() {
         
         {/* Navigation Tabs */}
         <div className="flex items-center gap-2 p-1.5 bg-white/80 backdrop-blur-md border border-slate-200/60 rounded-2xl mb-8 shadow-sm overflow-x-auto no-scrollbar">
-          {(['all', 'welfare', 'certificates', 'complaints', 'volunteer'] as const).map((tab) => (
+          {(['all', 'welfare', 'certificates', 'complaints', 'volunteer', 'blood-donors'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -195,11 +198,13 @@ export default function DashboardPage() {
                         ${app.type === 'Certificate' ? 'bg-indigo-50 text-indigo-500' : ''}
                         ${app.type === 'Complaint' ? 'bg-amber-50 text-amber-500' : ''}
                         ${app.type === 'Volunteer' ? 'bg-emerald-50 text-emerald-500' : ''}
+                        ${app.type === 'Blood Donor' ? 'bg-red-50 text-red-500' : ''}
                       `}>
                         {app.type === 'Welfare' && <Heart className="w-5 h-5" />}
                         {app.type === 'Certificate' && <FileText className="w-5 h-5" />}
                         {app.type === 'Complaint' && <MessageSquare className="w-5 h-5" />}
                         {app.type === 'Volunteer' && <UserCheck className="w-5 h-5" />}
+                        {app.type === 'Blood Donor' && <Droplet className="w-5 h-5" />}
                       </div>
 
                       {/* Info */}
@@ -209,12 +214,14 @@ export default function DashboardPage() {
                           <div className="w-1 h-1 rounded-full bg-slate-200" />
                           <span className="text-[11px] font-bold text-slate-400">{format(new Date(app.created_at), 'MMM dd, yyyy')}</span>
                         </div>
-                        <h4 className="text-slate-900 font-bold text-[15px] group-hover:text-primary transition-colors">
-                          {app.scheme_name || app.certificate_type || app.category || 'Volunteer Registration'}
-                        </h4>
-                        <p className="text-slate-400 text-xs font-mono mt-1">
-                          ID: {app.reference_id || app.tracking_id || app.volunteer_id}
-                        </p>
+                         <h4 className="text-slate-900 font-bold text-[15px] group-hover:text-primary transition-colors">
+                           {app.scheme_name || app.certificate_type || app.category || app.donor_id || 'Volunteer Registration'}
+                         </h4>
+
+                         <p className="text-slate-400 text-xs font-mono mt-1">
+                           ID: {app.reference_id || app.tracking_id || app.volunteer_id || app.donor_id}
+                         </p>
+
                       </div>
 
                       {/* Status */}

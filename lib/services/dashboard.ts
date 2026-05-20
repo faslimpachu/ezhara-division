@@ -5,11 +5,12 @@ export async function fetchDashboardData() {
     credentials: 'include' as const,
   }
 
-  const [welfare, certificates, complaints, volunteer] = await Promise.all([
+  const [welfare, certificates, complaints, volunteer, bloodDonors] = await Promise.all([
     fetch(`${BACKEND_URL}/api/welfare-applications/`, fetchOptions).then(r => r.json()),
     fetch(`${BACKEND_URL}/api/certificate-requests/`, fetchOptions).then(r => r.json()),
     fetch(`${BACKEND_URL}/api/complaints/`, fetchOptions).then(r => r.json()),
     fetch(`${BACKEND_URL}/api/volunteers/`, fetchOptions).then(r => r.json()),
+    fetch(`${BACKEND_URL}/api/blood-donors/`, fetchOptions).then(r => r.json()),
   ])
 
   return {
@@ -17,5 +18,6 @@ export async function fetchDashboardData() {
     certificates: Array.isArray(certificates) ? certificates : [],
     complaints: Array.isArray(complaints) ? complaints : [],
     volunteer: Array.isArray(volunteer) ? volunteer : [],
+    'blood-donors': Array.isArray(bloodDonors) ? bloodDonors : [],
   }
 }
